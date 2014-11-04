@@ -1,0 +1,34 @@
+\section{Introduction}\label{Se:introduction}
+
+Android is the most popular mobile operating system, with 79\% of the worldwide smartphone sales to end users in 2Q13 \cite{gartner-android-share}. A key aspect of the Android architecture is IAC, aka Inter-Process Communication (IPC), which enables modular design and reuse of functionality across apps and app components.
+
+The Android IAC model is implemented as a message-passing system, where messages are encapsulated as {\tt Intent} objects. Through {\tt Intent}s, an app (or app component) can utilize functionality exposed by another app (or app component), e.g. by passing a message to the browser to render content or to a navigation app to display a location and provide directions to it. 
+
+The Android IAC interface is a significant attack surface \cite{CPGW:MOBISYS11,MAB:DSN12,EOM:SP09}. Familiar examples of IAC vulnerabilities are Cross-Application Scripting (XAS), whereby an app is manipulated into running untrusted JavaScript code when rendering IAC content inside an HTML-based view; client-side SQL injection (SQLi), whereby an app backed by an SQLite database (supported natively by the Android platform) integrates unvalidated or unsanitized IAC data into an SQL query; and injection or manipulation of UI elements, which occurs if the app utilizes reflective APIs such as {\tt Fragment.instantiate($\ldots$)} without proper input validation. We describe these as well as other attack vectors in detail in \secref{attackSurface}. 
+
+\paragraph{Past Research} Indeed, the Android IAC interface has been investigated from different angles. These include static detection algorithms for confidentiality threats due to outbound IAC \cite{EOM:SP09}; fuzzing tools to test the robustness of message handling \cite{MAB:DSN12}; as well as proposals to revise architectural aspects of the Android system for more secure IAC \cite{KCHW:SPSM12}).
+
+To our knowledge, none of the existing research has addressed the problem of (dynamically) testing for IAC integrity vulnerabilities. The main challenge for the testing tool is that all fields of an IAC message but {\tt uri} are custom (i.e., not specified in the IAC interface declaration). This complicates the construction of meaningful test inputs. Another challenge, given a solution to the first problem, is how to obtain good path coverage with low overhead.
+
+%\paragraph{Existing Approaches} Previous studies have identified the IAC interface as an important attack surface \cite{MAB:DSN12,EOM:SP09}. A notable example is the ComDroid system~\cite{EOM:SP09}, which relies on static program analysis to detect potentially unsafe instances of outbound message passing due to unauthorized {\tt Intent} receipt (e.g., sending broadcast messages without sufficient permission requirements, thereby enabling eavesdropping attacks). Another thread of work explores prevention (or mitigation) strategies, where the goal is to block IAC attacks by revising architectural aspects of the Android system (e.g. platform-level heuristics to decide eligible senders and recipients for a message \cite{KCHW:SPSM12}).
+%
+%A complementary direction, which to our knowledge has been uncharted territory to date, is to uncover (inbound) IAC vulnerabilities via dynamic testing. This presents unique challenges, and in particular (i) characterizing the concrete IAC attack surface, (ii) ensuring high coverage in testing and (iii) restricting the complexity of the testing algorithm.
+
+\paragraph{Our Approach} We address the problem of testing for IAC integrity vulnerabilities. In stating this problem, we place special emphasis on practicality. Our goal is to design a testing algorithm featuring high recall (or coverage) alongside low overhead. This twofold requirement implies, in specific, that the testing tool can only (i) rely on sparse app/platform instrumentation (as opposed to gleaning arbitrary run-time information), and (ii) apply a small and focused set of tests.
+
+While high coverage is a natural requirement, the motivation for low overhead is to enable efficient large-scale testing by third parties, such as app stores or organizations with a Bring Your Own Device (BYOD) policy, that currently have limited vetting power. Indeed, the testing system we have created, dubbed \Tool, is packaged as a cloud-based service to support these use cases.
+
+The conceptual idea underlying \Tool\ is to monitor only a select set of platform APIs --- those responsible for security-relevant functionality as well as access to IAC data --- and utilize the resulting run-time information to guide testing. We describe how, based on this information alone, \Tool\ is able to prune redundant tests, recover custom IAC fields, and vary inputs to increase path coverage.  
+
+We report on extensive evaluation of \Tool\ across a set of 80 top-popular Android apps from the wild, in which a security expert detected a total of 165 IAC vulnerabilities. 
+Using an average of 40 tests per app, \Tool\ was able to detect 150 of those vulnerabilities, which constitutes a recall rate of 91\%. Some of the vulnerabilities have already been fixed by the developers. Beyond validating the overall efficacy of \Tool, we also validate each of the design choices it features, and demonstrate its significance experimentally. Last, we provide qualitative insight into the usefulness of \Tool\ via detailed analysis of several of the detected vulnerabilities.
+
+\paragraph{Contributions} This paper makes the following principal contributions:
+\begin{enumerate}
+	\item \underline{Dynamic IAC Security Testing:} We have created the first comprehensive dynamic testing system for Android IAC integrity vulnerabilities.
+	\item \underline{Attack Surface:} We develop a catalog of previously unknown attack vectors that all result from insecure handling of incoming IAC traffic. This is of independent value for future research on Android security. 
+	\item \underline{Implementation and Evaluation:} We have implemented our approach as the \Tool\ system, which is featured as a commercial cloud service, and has been evaluated atop 80 top-popular Android apps.
+\end{enumerate}
+
+
+ 

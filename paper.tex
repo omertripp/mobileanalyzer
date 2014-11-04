@@ -1,0 +1,107 @@
+%
+% LaTeX template for prepartion of submissions to PLDI'15
+%
+% Requires sigplanconf style file provided on PLDI'15 web site
+%
+\documentclass[pldi,nocopyrightspace]{sigplanconf}
+
+%\geometry{verbose,tmargin=2.3cm,bmargin=2.8cm,lmargin=1in,rmargin=1in}
+%\synctex=-1
+\usepackage[english]{babel}
+\usepackage{float}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{multirow}
+\usepackage{pifont}
+\usepackage{graphicx}
+\usepackage{algorithm2e}
+\usepackage{xfrac}
+\usepackage[unicode=true,
+bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,
+breaklinks=false,pdfborder={0 0 0},backref=false,colorlinks=false]
+{hyperref}
+\hypersetup{pdftitle={TODO},
+	pdfauthor={todo},
+	pdfkeywords={todo}}
+
+%\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+%% Because html converters don't know tabularnewline
+%\providecommand{\tabularnewline}{\\}
+%\floatstyle{ruled}
+\newfloat{algorithm}{tbp}{loa}
+\providecommand{\algorithmname}{Algorithm}
+\floatname{algorithm}{\protect\algorithmname}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+
+%\@ifundefined{date}{}{\date{}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usepackage{footnote}
+%\makesavenoteenv{tabular}
+
+%\usepackage{algorithm2e}
+%\usepackage{fancyvrb}
+%\usepackage{oz}
+%\usepackage{paralist}
+%\usepackage{xspace}
+\usepackage{listings}
+%\usepackage{graphicx}
+% %\footnotesize
+\lstset{
+	numbers=left,
+	numberstyle=\tiny,
+	language={Java},
+	mathescape=true,
+	flexiblecolumns=true,
+	morekeywords={def,Int,call,method,var,assert,share,unshare,acquire,release,fork,join,free,invariant,requires,ensures,acc,rd,old},
+	basicstyle=\sffamily\small,
+	moredelim=[is][\itshape]{@}{@},
+	stepnumber=1,
+	numbersep=2pt} 
+%\usepackage{url}
+
+\input{macro}
+
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+\newcommand{\MarcoEdit}[1]{{\color{red} #1}}
+
+
+\begin{document}
+
+\title{Dynamic Detection of Inter-application Communication Vulnerabilities in Android}
+
+\maketitle
+
+\input{abstract}
+
+\input{introduction}
+
+\input{surface}
+
+\input{overview}
+
+\input{algfeatures}
+
+\input{full}
+
+%\input{advanced}
+
+%\input{implementationO}
+
+\input{evaluation}
+
+%\input{stats}
+
+\input{related}
+
+\input{conclusion}
+
+\bibliographystyle{abbrvnat}
+%\bibliography{bibliography}
+
+\end{document}

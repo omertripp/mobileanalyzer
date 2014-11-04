@@ -1,0 +1,89 @@
+\section{Main Features}\label{Se:corealg}
+
+In this section, we describe the main features of the \Tool\ algorithm. We defer description of the overall algorithm, as well as its formal guarantees, to \secref{fullalg}.
+
+\subsection{Reducing Testing Effort via Probing}\label{Se:detectionSubsec}
+
+The goal of the detection, or probing, stage is to decide for a given input point which tests should be applied to it. This is done by tracking, for the different security rules, (i) which relevant APIs are invoked while processing the probe input and (ii) the data arguments reaching each of the invocation points. 
+
+The security rules each define a necessary condition for a vulnerability to manifest in the form of a regular language ranging over library APIs. As an illustration, below are simplified versions of the necessary condition for memory corrpution and SQLi, respectively, per our running example:
+
+\begin{scriptsize}
+$$
+\begin{array}{rl}
+	\star\ & {\tt System.loadLibrary}  
+	\star\ ({\tt Bundle.getStringExtra / \odot} \\ & \hspace{1.5cm} \vee\ {\tt Intent.getDataString / \odot}\  
+	\vee\ {\tt Intent.getString / \odot})\ \star
+\end{array}
+$$
+$$
+\begin{array}{rl}
+	\star\ ({\tt Bundle.getString\ /\ \odot} & \vee\ {\tt Intent.getStringExtra / \odot} \\ 
+	& \vee\ {\tt Intent.getDataString / \odot}) \star\ {\tt execSQL(\odot)}\ \star
+\end{array}
+$$
+\end{scriptsize}
+$\star$ is short for $. \star$, and denotes any sequence of trace events. $\odot$ denotes the probe value. 
+
+Thus, the memory-corruption rule mandates that the trace prefix contain a call to {\tt loadLibrary($\ldots$)}, and at a later point the probe value be accessed (via {\tt getString($\ldots$)}, {\tt getStringExtra($\ldots$)} or {\tt getDataString()}). The SQLi rule matches traces that read the probe value, and later flow the read value into {\tt execSQL($\ldots$)}.
+
+The general grammar for expressing necessary conditions for vulnerability to a particular type of attack is given in \figref{grammar}. The grammar root is the $r$ symbol. $\ell$ can refer to any built-in API either in Java or in the Android libraries.
+
+\begin{figure}
+	$$
+	\begin{array}{rcl}
+		r & ::= &  a\ |\ (a\ \vee\ a)\ |\  a\ a |\ \epsilon  \\
+		a & ::= & \star\ |\ \ell\ |\ \ell / \odot |\ \ell(\odot) \\
+		\ell & \in & \text{all Android and Java library APIs}
+	\end{array}
+	$$
+\caption{\label{Fi:grammar}Grammar for Expressing Necessary Vulnerability Conditions}
+\end{figure}
+
+\subsection{Recovery of Custom Message Fields}
+
+At time zero, \Tool\ only has knowledge of the declared IAC interface through the manifest file. Recovering custom fields, or extra parameters, is an iterative process that starts at that begins with an ``empty'' message. For the running example, for instance, the first message may be the probing {\tt Intent}
+\begin{lstlisting}[numbers=none]
+{ cmp=...WriteActivity act=android...MAIN 
+uri=http:$//$G0B/ with Extras Bundle[{}]}
+\end{lstlisting}
+where the data field, {\tt uri}, of the initial {\tt Intent} is populated with a unique signature (in the above case: {\tt http://G0B/}).
+
+By instrumenting the platform APIs used to read custom fields (e.g., 
+{\tt getStringExtra($\ldots$)}, {\tt getBooleanExtra($\ldots$)}, etc), \Tool\ observes (failed) accesses to custom field identifiers that are missing from the current message. Thus, in the next interation, these will be populated into the sent message, e.g.:
+\begin{lstlisting}[numbers=none]
+Intent { cmp=...WriteActivity act=android...MAIN 
+uri=http:$//$G0B/ with Extras Bundle[{foo=http:$//$G4B/}]}
+\end{lstlisting}
+The unique signature {\tt http://G4B/} is now associated with the custom parameter {\tt ``foo''}. 
+
+Note, importantly, that aside from setting {\tt ``foo''}, the new {\tt Intent} is exactly identical to the original {\tt Intent} leading to the discovery of this custom parameter, including the exact probe value attached to the {\tt uri} field. This is to ensure that the control flow leading to the access to {\tt ``foo''} is preserved.
+
+Beyond the basic setting of accessing custom fields \emph{directly} via {\tt Intent} APIs (like {\tt getStringExtra($\ldots$)}), there is the alternative, demonstrated at line 14 of \figref{techExample}, of obtaining custom values via the {\tt Bundle} associated with the {\tt Intent}. We refer to this method of accessing custom parameters as \emph{indirect}, because a given {\tt Bundle} may or may not be linked to the {\tt Intent} sent by \Tool.
+
+To account for indirect accesses to custom parameters, \Tool\ first establishes the binding between the message it sent and the {\tt Bundle} object created for its respective {\tt Intent} object. This is done by installing a monitor inside the {\tt Intent.getBundle()} method. The monitoring code (i) checks whether the receiving {\tt Intent} indeed corresponds to the message sent by \Tool\ (by inspecting its {\tt data} and extra fields), and if so, then (ii) the {\tt Bundle} is marked as \emph{relevant}. Furthermore, when a {\tt Bundle} is cloned, the clone is marked as relevant as well. This is achieved by placing monitoring code within the {\tt Bundle} copy constructor.
+
+Based on this marking technique, \Tool\ is able to distinguish between accesses to relevant versus irrelevant {\tt Bundle} objects. Only the former contribute custom field identifiers that \Tool\ subsequently explores and exploits. Interaction with irrelevant {\tt Bundle}s is ignored.
+
+\subsection{Path Exploration via Boolean Extras}
+
+While string values carried by the {\tt Intent} present an opportunity for an attack, boolean values are not candidate attack targets, and so the naive approach is to simply ignore these custom fields. In practice, boolean extras are typically used by the code that handles the {\tt Intent} to decide how to process the incoming data. That is, they often manifest in (or as) path conditions.
+
+In light of this observation, a naive strategy to increase path coverage is to enumerate all possible combinations of boolean extras. Instead, to strike a more effective performance/coverage tradeoff, \Tool\ enforces certain simplifying assumptions, which appear to hold in practice. (See \secref{evaluation}.) These are based on the below definition.
+
+\begin{definition}[Independence and Domination] Given IAC input point $e$ and boolean extras $b$ and $b'$, we say that $b$ \emph{dominates} $b'$ under $e$ if in any execution starting at $e$, $b'$ is accessed if $b$ is assigned a specific truth but not the other (e.g., only when $b$ is {\tt true}). We say that $b$ is independent of $b'$ (under $e$) if $b$ is not dominated by $b'$ (under $e$).
+\end{definition}
+
+In the running example, {\tt ``b1''} dominates both {\tt ``b2''} and {\tt ``b3''}. However, {\tt ``b2''} and {\tt ``b3''} are independent of each other.
+
+The assumption that distinct boolean extras are either indepdent or related via domination leads to a linear-time search algorithm, whereby boolean extras are toggled one at a time. That is, given an {\tt Intent} message $m$ defining boolean extras $b_1,\ldots,b_n$, path exploration is carried out by exploding $m$ into $n$ (rather than $2^n$) variants $m_1 \ldots m_n$, such that $m_i \equiv m[ b_i \mapsto \neg b_i ]$. We justify this simplified algorithm below.
+
+\begin{lemma}[Linear-time Path Exploration] Let $b_1,\ldots,b_n$ be boolean extras that pairwise are either independent or related via domination. Then toggling each in turn is equivalent to exhausting all $2^n$ joint valuations of $b_1,\ldots,b_n$.
+\begin{proof}[Proof Sketch]
+If $b_i$ and $b_j$ are independent, then their conjunction does not form a path condition, and so it suffices to toggle each of them in turn. If, alternatively, $b_i$ dominates $b_j$ (without loss of generality), then toggling $b_i$ would obviate access to $b_j$, and so exploring all possible combinations of $b_i$ and $b_j$ is redundant.
+\end{proof}
+\end{lemma}
+
+
+
+

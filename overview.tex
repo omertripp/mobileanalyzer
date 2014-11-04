@@ -1,0 +1,71 @@
+\section{Overview}
+
+Achieving high coverage at an affordable cost in IAC testing is not straightforward. We explain the challenges, and how they are handled by \Tool, in a progressive manner with reference to the running example in \figref{techExample}. We motivate the features we developed in response with the support of experimental data from \secref{evaluation}.
+
+\subsection{Running Example}
+
+The code in \figref{techExample} is illustrative of the different ways in which incoming IAC messages are processed. {\tt getDataString()} retrieves the value of the built-in {\tt data} field, whereas custom fields (like {\tt ``foo''}) are read via {\tt getStringExtra($\ldots$)} and {\tt getBooleanExtra($\ldots$)}. These can also be accessed via the {\tt Bundle} object, as shown at line 14 with the {\tt getString($\ldots$)} call.
+
+\begin{figure}
+	\begin{lstlisting}[showstringspaces=false]
+class WriteActivity extends Activity {
+  static { System.loadLibrary("native"); }
+
+  protected void onCreate(Bundle savedInstanceState) {
+   super.onCreate(savedInstanceState);
+   setContentView(R.layout.activity_write);
+   Intent intent = this.getIntent();
+   String data = intent.getDataString();	
+   File target = new File(this.getFilesDir(),"log");
+   int fd = NativeIO.open(target.getAbsolutePath());	
+   int size = NativeIO.write(fd, data);		 
+   Bundle bundle = intent.getBundle();
+   String fooExtra = intent.getStringExtra("foo");
+   String barExtra = bundle.getString("bar");		
+   if (fooExtra == null) return;	
+   SQLiteDatabase db = ...;
+   db.execSQL(String.format("UPDATE ... 
+      WHERE name='%s' ... id= '%s'", fooExtra, barExtra));	
+   boolean b1 = intent.getBooleanExtra("b1", false);
+   if (true == b1) {
+    boolean b2 = intent.getBooleanExtra("b2",false);
+    boolean b3 = intent.getBooleanExtra("b3",false);
+    if (true == b2)
+     db.execSQL(String.format("UPDATE ... 
+        WHERE name='%s'", fooExtra));
+    if (true == b3)
+     db.execSQL(String.format("UPDATE ... 
+        WHERE name='%s'", fooExtra)); } } }
+	\end{lstlisting}
+	\caption{\label{Fi:techExample}An \texttt{Activity} Suffering from IAC Vulnerabilities}
+\end{figure}
+
+String values from incoming messages often flow into security-sensitive operations, as the {\tt write($\ldots$)} and {\tt execSQL($\ldots$)} at lines 14 and 18, respectively, illustrate. {\tt write($\ldots$)} also demonstrates use of native code.	Boolean values often govern branching decisions, as with {\tt ``b1''} at lines 19 and 20.
+
+\subsection{Test Pruning}
+
+Naive fuzz testing, whereby all available test payloads (corresponding to all the attacks listed in \secref{attackSurface}) are injected into the {\tt data} field of an {\tt Intent} object, 
+yields limited coverage at a high cost. The first order of business, therefore, is to prune out irrelevant tests via \emph{detection} (or \emph{probing}). 
+
+\Tool\ achieves a reduction of 87\% in testing effort via a lightweight specification of \emph{necessary conditions}. Intuitively, for a given attack type (e.g., SQLi), the specification states conditions that must be met for vulnerabilities of that type to be present. The conditions refer to (i) security-relevant APIs (e.g., {\tt execSQL($\ldots$)}), and (ii) whether/how unique probe values flow into these APIs (e.g., the extra parameters flowing into {\tt execSQL($\ldots$)}).
+
+\subsection{Attack Targets}
+
+The second challenge, having optimized performance via detection, is to improve recall. Naive fuzzing stands at 57\% recall. A key reason for misses is that often the vulnerable entity is not the 
+{\tt data} field but rather a custom IAC (or extra) parameter.
+
+Extra parameters are not documented in the manifest file, nor is it possible in general to recover their identifiers via static analysis. Instead, \Tool\ identifies extra parameters by monitoring {\tt getExtra($\ldots$)} calls and variants thereof ({\tt getStringExtra($\ldots$), getDoubleExtra($\ldots$), etc}). For the running example, this yields {\tt ``foo''} and {\tt ``bar''} as well as the boolean extras.
+%
+%The full monitoring solution is more involved, as extra parameters can also be accessed indirectly via the {\tt Bundle} object associated with the {\tt Intent}, as illustrated at line 14 in the running example.
+
+Thanks to this feature, discovered string extras become attack targets, which leads to an iterative probing/testing algorithm (running as long as new targets are discovered). The iterative algorithm outputs an overall of 140 detected vunlerabilities, which constitutes an increase of almost 50\% in recall for a rate of 0.85.
+
+\subsection{Path Conditions}
+
+While accounting for string extras boosts recall significantly, there are still missing vulnerabilities along unexecuted paths. Obtaining better path coverage is nontrivial in general, as it requires a notion of how path conditions are structured and how to negate them.
+
+A simple yet effective practical observation is that often boolean extras act as flags that govern (at least partially) how the incoming IAC message is processed. As an illustration,
+the conditional branches at lines 19, 23 and 26 are governed by {\tt ``b1''}, {\tt ``b2''} and {\tt ``b3''}. Manipulating boolean extras is thus an effective vehicle to increase path coverage, leading to the detection of 11 additional vulnerabilities, albeit at the cost of 63 tests and 25 minutes per app.
+
+As a performance optimization, we explore boolean extras assuming they relate to each other either via ``domination'' ({\tt ``b1''} / {\tt ``b2''},{\tt ``b3''}) or via ``independence''
+({\tt ``b2''} / {\tt ``b3''}), which permits checking linearly many assignment strategies. This simplifying assumption appears justified in practice, as there is significant cutdown in testing effort and onle a single vulnerability is missed.
