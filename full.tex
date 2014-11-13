@@ -1,10 +1,10 @@
-\section{Full Algorithm}
+\section{Full Algorithm}\label{Se:fullalg}
 
-Having described the main \Tool\ features of interest, we now describe the complete algorithm.
+Having highlighted the main \Tool\ features, we now describe the complete algorithm.
 
 \subsection{Setup}
 
-The testing session begins by deploying the target app in debug mode. This is done to enable the insertion of debug breakpoints into library APIs. The motivation for this design choice was that it applies to any Android build and any device as opposed to requiring a custom build (as in \cite{TaintDroid}), which limits applicability and requires heavy maintenance.
+The testing session begins by deploying the target app in debug mode. This enables the insertion of debug breakpoints into library APIs. The motivation for this design choice was that it applies to any Android build and any device as opposed to requiring a custom build (as in \cite{EGCCJMS:OSDI10}), which limits applicability and requires heavy maintenance.
 
 Once the target app is deployed, \Tool\ obtains --- via the {\tt apktool} utility --- its manifest file. Parsing the manifest reveals the set of {\tt Activity}s defined by the app that are both public and exported. These are reachable directly via {\tt Intent}s, and so the first IAC inputs created by \Tool\ are benign {\tt Intent}s.
 
@@ -13,23 +13,29 @@ Once the target app is deployed, \Tool\ obtains --- via the {\tt apktool} utilit
 During the testing session, \Tool\ switches between three modes:
 \begin{itemize}
 	\item Monitoring: While a message is being processed by the target input point, \Tool\ tracks via system-level hooks which security-relevant APIs are invoked, and which custom fields the app attempts to access. Monitoring serves both for coverage and for validation purposes.
-	\item Testing: Once a new field is detected, a probe request is sent for that field. Comptabile attack types are then launched. 
+	\item Testing: When a new field is detected, a probe request is sent for it. Comptabile attack types are then launched. 
 	\item Exploration: For a given probe message with boolean extras, variants thereof (with one extra flag toggled at a time) are also sent as probes.
 \end{itemize}
 Interleaving monitoring, testing and exploration yields an iterative testing cycle. As custom fields and fresh execution paths are incrementally discovered, the attack surface expands. On the other hand, submitting probe and test messages reveals more custom fields and execution paths. 
 
-To validate the success of a security test, \Tool\ relies on externally observable indications, such as a crash, as well as on the following: 
+To validate the success of a security test, \Tool\ relies on externally observable indications, such as component/application crashes, as well as on the following: 
 \begin{enumerate}
 	\item Code monitoring: The same monitors used for detection are also used for validation.
 	Values reaching security-sensitive operations are observed via run-time handlers 
 	triggered in response to hitting debug breakpoints.
 	\item Log listener: \Tool\ tracks updates to the standard log files provided by the Android platform. 
-	\item HTTP listener: A second output that \Tool\ listens on is outbound HTTP traffic. This monitoring method is used primarily to validate XAS vulnerabilities.
+	\item HTTP listener: A second output that \Tool\ listens on is outbound HTTP traffic. This method is used primarily to validate XAS vulnerabilities.
 \end{enumerate} 
+Thanks to these varied validation methods, \Tool\ is able to generate actionable security warnings. These include both (i) detailed code-level artifacts (call stack) and (ii) a concrete attack vector (both payload and entrypoint). An example of such a report appears in \figref{screenshot}.
+
+\begin{figure}
+	\includegraphics[width=\columnwidth]{screenshot.pdf}
+	\caption{\label{Fi:screenshot}A Vulnerability Report Output by \Tool}
+\end{figure} 
 
 \subsection{Formal Description}
 
-\algref{maalg} summarizes the complete flow of the \Tool\ algorithm. The starting point is to instrument the target app to record (select) library API invocations as well as accesses to user-provided data. Next, \Tool\ obtains the declared IAC input points $E$ of the subject application via analysis of its manifest file. These seed the iterative testing process. The fixpoint loop iterates over $E$, picking at each iteration a candidate input point $e$ and removing it from the worklist.
+\algref{maalg} summarizes the complete flow of the \Tool\ algorithm. The starting point is to instrument the target app to record (select) library calls as well as accesses to user-provided data. Next, \Tool\ obtains the declared IAC input points $E$ of the subject application via analysis of its manifest. These seed the iterative testing process. The fixpoint loop iterates over $E$, picking at each iteration a candidate input point $e$ and removing it from the worklist.
 
 \begin{algorithm}[t]
 	\DontPrintSemicolon
@@ -58,36 +64,15 @@ To validate the success of a security test, \Tool\ relies on externally observab
 			}
 		}
 	}
-	%\Begin{
-	%	{$E \longleftarrow \text{declared interface points of $A$}$}\; \\
-	%	{$A' \longleftarrow I(A)$ \tcp*[h]{instrument $A$}}\; \\
-	%	{$out \longleftarrow \emptyset$}\; \\
-	%	\While{$E \neq \emptyset$}{
-	%		{$i \longleftarrow \text{choose from}\ I$}\; \\
-	%		{$I \longleftarrow I \setminus \{ i \}$}\; \\
-	%		\ForEach{$m \in M(i)$}{
-	%			{$b \longleftarrow D(i,m)$}\; \\
-	%			\If{$b$}{
-	%				$p[i,m] \longleftarrow \text{create payload for $i$ and $m$}$\; \\
-	%				$(r,E') \longleftarrow \text{fire $p[i,m]$}$\; \\
-	%				$E \longleftarrow E \cup E'$\; \\
-	%				$v \longleftarrow V(r)$\; \\
-	%				\If{$v$}{
-	%					$out \longleftarrow out \cup \{ r \}$\; 
-	%				}
-	%			}
-	%		}
-	%	}
-	%}			
-	\caption{\label{Al:maalg}Outline of the Core \Tool\ Algorithm, where $D$, $M$, $V$ and $I$ are the Detection, Mutation, Validation and Instrumentation, Respectively}
+	\caption{\label{Al:maalg}Outline of the Core \Tool\ Algorithm, where $D$, $M$, $V$ and $I$ Denote Detection, Mutation, Validation and Instrumentation, Respectively}
 \end{algorithm}
 
 
-For the current input point $e$, the next step is to check whether $e$ satisfies the necessary conditions for each type $m$ of attack. This is achieved by the detection algorithm with the $D(m,e)$ call. Successful detection leads to the creation and application of a payload $p[m,e]$. Exercising the instrumented app $A'$ with $p[m,e]$ yields two artifacts: additional input points $E'$ (discovered by monitoring accesses to custom parameters) and recording of app behaviors/outputs $r$ for validation. The set $O$ of vulnerabilities reported by \Tool\ is augmented if $r$ confirms a vulnerability (the $V(r)$ check).
+For the current input point $e$, the next step is to check whether $e$ satisfies the necessary conditions for each attack type $m$. This is represented as the $D(m,e)$ call. Successful detection leads to the creation and application of a payload $p[m,e]$. Exercising the instrumented app $A'$ with $p[m,e]$ yields two artifacts: additional input points $E'$ (discovered by monitoring accesses to custom parameters) and recording of app behaviors/outputs $r$ for validation. The set $O$ of vulnerabilities reported by \Tool\ is augmented if $r$ confirms a vulnerability (the $V(r)$ check).
 
-While \Tool\ is a dynamic testing system with (purposely) limited means to track the internal behavior of the target app, there are still situations in which \Tool\ is guaranteed to achieve full coverage. These are governed by a simplifying assumption, stated formally in Definition \ref{De:dataind}, which is too idealized to hold pervasively in practice, but still (i) provides insight into the design of \Tool, and (ii) appears to be roughly applicable given \Tool's recall rate of $>90\%$ over a large set of popular Android apps. (See \secref{evaluation}.)
+While \Tool\ is a dynamic testing system with (purposely) limited means to track the internal behavior of the target app, there are still situations in which full coverage is guaranteed. These are governed by a simplifying assumption, stated formally in Definition \ref{De:dataind}, which is too idealized to hold pervasively in reality, but still (i) provides insight into the design of \Tool, and (ii) appears useful in practice given \Tool's recall rate of $>90\%$ over a large set of popular Android apps. (See \secref{evaluation}.)
 
-\begin{definition}[Data Independence]\label{De:dataind} We refer to IAC input point $e$ as \emph{data independent} if execution flow starting at $e$ is decided solely according to (i) boolean extra parameters and/or (ii) presence of extra fields. In particular, the values of non-boolean extra parameters (and other variables in the program) do not affect control flow.
+\begin{definition}[Data Independence]\label{De:dataind} We refer to IAC input point $e$ as \emph{data independent} if execution flow starting at $e$ is decided solely according to (i) boolean extras and/or (ii) presence of extra fields. In particular, the values of non-boolean extras (and other variables in the program) do not affect control flow (cf. \cite{SYGABSV:ISSTA14,W:POPL86}).
 \end{definition}
 
 \begin{theorem}[Coverage] Let $e$ be a data-independent input point, such that the value of incoming IAC field $f$, arriving through $e$, flows into sink $s$. 

@@ -4,9 +4,10 @@ Achieving high coverage at an affordable cost in IAC testing is not straightforw
 
 \subsection{Running Example}
 
-The code in \figref{techExample} is illustrative of the different ways in which incoming IAC messages are processed. {\tt getDataString()} retrieves the value of the built-in {\tt data} field, whereas custom fields (like {\tt ``foo''}) are read via {\tt getStringExtra($\ldots$)} and {\tt getBooleanExtra($\ldots$)}. These can also be accessed via the {\tt Bundle} object, as shown at line 14 with the {\tt getString($\ldots$)} call.
+The code in \figref{techExample} is illustrative of the different ways in which incoming IAC messages are processed. {\tt getDataString()} retrieves the value of the built-in {\tt data} field, whereas custom fields (like {\tt ``foo''}) are read via {\tt getStringExtra($\ldots$)} and {\tt getBooleanExtra($\ldots$)}. These can also be accessed via the {\tt Bundle} object, as shown at line 14 with {\tt getString($\ldots$)}.
 
 \begin{figure}
+	\begin{scriptsize}
 	\begin{lstlisting}[showstringspaces=false]
 class WriteActivity extends Activity {
   static { System.loadLibrary("native"); }
@@ -37,10 +38,11 @@ class WriteActivity extends Activity {
      db.execSQL(String.format("UPDATE ... 
         WHERE name='%s'", fooExtra)); } } }
 	\end{lstlisting}
+		\end{scriptsize}
 	\caption{\label{Fi:techExample}An \texttt{Activity} Suffering from IAC Vulnerabilities}
 \end{figure}
 
-String values from incoming messages often flow into security-sensitive operations, as the {\tt write($\ldots$)} and {\tt execSQL($\ldots$)} at lines 14 and 18, respectively, illustrate. {\tt write($\ldots$)} also demonstrates use of native code.	Boolean values often govern branching decisions, as with {\tt ``b1''} at lines 19 and 20.
+String values from incoming messages often flow into security-sensitive operations, as {\tt write($\ldots$)} and {\tt execSQL($\ldots$)} at lines 14 and 17, respectively, illustrate. {\tt write($\ldots$)} also demonstrates use of native code.	Boolean values often govern branching decisions, as with {\tt ``b1''} at lines 19 and 20.
 
 \subsection{Test Pruning}
 
@@ -65,7 +67,7 @@ Thanks to this feature, discovered string extras become attack targets, which le
 While accounting for string extras boosts recall significantly, there are still missing vulnerabilities along unexecuted paths. Obtaining better path coverage is nontrivial in general, as it requires a notion of how path conditions are structured and how to negate them.
 
 A simple yet effective practical observation is that often boolean extras act as flags that govern (at least partially) how the incoming IAC message is processed. As an illustration,
-the conditional branches at lines 19, 23 and 26 are governed by {\tt ``b1''}, {\tt ``b2''} and {\tt ``b3''}. Manipulating boolean extras is thus an effective vehicle to increase path coverage, leading to the detection of 11 additional vulnerabilities, albeit at the cost of 63 tests and 25 minutes per app.
+the conditional branches at lines 20, 23 and 26 are governed by {\tt ``b1''}, {\tt ``b2''} and {\tt ``b3''}. Manipulating boolean extras is thus an effective vehicle to increase path coverage, leading to the detection of 11 additional vulnerabilities, albeit at the cost of 63 tests and 25 minutes per app.
 
 As a performance optimization, we explore boolean extras assuming they relate to each other either via ``domination'' ({\tt ``b1''} / {\tt ``b2''},{\tt ``b3''}) or via ``independence''
 ({\tt ``b2''} / {\tt ``b3''}), which permits checking linearly many assignment strategies. This simplifying assumption appears justified in practice, as there is significant cutdown in testing effort and onle a single vulnerability is missed.
