@@ -1,0 +1,31 @@
+\begin{table*}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+\hline 
+Run & Duration (mins) & Attacks & Probes & Hit Probes & Extras & Boolean Extras & TPs & High & Medium & Low\tabularnewline
+\hline 
+\hline 
+No Pruning with no extras &  &  & 0 & 0 & 0 & 0 &  &  &  & \tabularnewline
+\hline 
+Pruning with no extras & 314 & 708 & 416 & 199 & 0 & 0 & 59 & 4 & 1 & 54\tabularnewline
+\hline 
+No Pruning with naive extras{*} & 1452 & 3874 & 0 & 0 & 149 & 0 & 87 & 19 & 7 & 61\tabularnewline
+\hline 
+Pruning with naive extras{*} & 475 & 1065 & 530 & 393 & 130 (-19) & 0 & 75 & 18 (-1) & 6 (-1) & 51 (-10,+3)\tabularnewline
+\hline 
+No Pruning with linear bruteforce &  &  & 0 & 0 &  &  &  &  &  & \tabularnewline
+\hline 
+Pruning with linear bruteforce{*}{*} & 1583 & 3257 & 1252 & 1154 & 335 & 137 & 92 & 15 & 9 & 68\tabularnewline
+\hline 
+No Pruning with exponential bruteforce &  &  & 0 & 0 &  &  &  &  &  & \tabularnewline
+\hline 
+Pruning with exponential bruteforce{*}{*} & 1914 & 3821 & 1479 & 1377 & 320 & 135 & 92 & 15 & 10 & 67\tabularnewline
+\hline 
+\end{tabular}
+\caption{foo}
+\end{center}
+\end{table*}
+
+{*} Need to re-run as per change of extras algorithm.
+
+{*}{*} Need to re-run several apps due to Bundle.get bug

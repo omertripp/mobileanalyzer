@@ -1,0 +1,32 @@
+\section{Coverage}
+
+\subsection{Attack Targets}
+
+The testing session begins by deploying the target app in debug mode. This is done to enable insertion of debug breakpoints into the app as a means to monitor internal events (i.e., events that are externally invisible, such as method invocations) during the app's execution. Specifically, debug breakpoints are installed at the entry location of (i) methods that access user input (e.g., {\tt Intent.getDataString()} and {\tt Intent.getStringExtra($\ldots$)}) and (ii) sink methods (e.g., {\tt SQLiteDatabase.execSQL($\ldots$)} and {\tt System.loadLibrary($\ldots$)}).
+
+Monitoring accesses to extra parameters is the core means for \Tool\ to expand its coverage of the IAC attack surface. In \secref{corealg}, we illustrate the core functionality of tracking direct access to extra parameters via {\tt Intent} methods like {\tt getStringExtra($\ldots$)}. There is, however, an alternate way of accessing custom parameters, which we demonstrate in \figref{techExample} using the commented-out statements with label {\tt A1}.
+
+Instead of accessing custom parameters via the {\tt Intent} object, the {\tt Bundle} associated with the {\tt Intent} is retrieved via a call to {\tt Intent.getBundle()}. From this point on, custom parameters can be accessed through the {\tt Bundle} object using APIs like {\tt Bundle.getString($\ldots$)}. We refer to this method of accessing custom parameters as \emph{indirect}, because a given {\tt Bundle} may or may not be linked to the {\tt Intent} sent by \Tool.
+
+The first challenge is to establish the binding between the {\tt Intent} sent by \Tool\ and its respective {\tt Bundle}. This is done by installing a monitor inside the {\tt Intent.getBundle()} method. The monitoring code (i) checks whether the receiving {\tt Intent} is indeed the one sent by \Tool\ (by inspecting the {\tt uri} and extra values), and if so, then (ii) the {\tt Bundle} is marked as \emph{relevant}. Furthermore, when a {\tt Bundle} is cloned (which is done via a copy constructor), then the clone is marked as relevant as well. This is achieved by placing monitoring code within the copy constructor.
+
+Based on this marking technique, \Tool\ is able to distinguish between accesses to relevant versus irrelevant {\tt Bundle} objects. Only custom parameters queried over a relevant {\tt Bundle} object are recorded for future investigation. Other custom-parameter accesses are ignored.
+
+\subsection{Path Conditions}
+
+While string values carried by the {\tt Intent} present an opportunity for an attack, boolean values are not candidate attack targets, and so the naive approach is to simply ignore such input points. In practice, boolean flags are typically used by the code that handles the {\tt Intent} to decide how to process the incoming data. That is, boolean extra parameters often manifest in (or as) path conditions.
+
+As an example, we refer to the commented-out conditional expression in \figref{techExample}, annotated with the {\tt A2} label. It contains four conditional expressions, which refer to boolean extra {\tt ``b1''} in the outer condition and {\tt ``b2''} and {\tt ``b3''} separately and then conjoined in the nested condition. By default all three {\tt execSQL($\ldots$)} sink calls governed by these conditions will be missed by \Tool, as the default value assigned to {\tt ``b1''}, {\tt ``b2''} and {\tt ``b3''} (if they are not set on the {\tt Intent}) is {\tt false}. 
+
+We have verified experimentally, over real-world apps, that coverage loss due to ignoring boolean extras is noticeable. (See \secref{boolExtras}.) On the other hand, 
+brute-force enumeration of all possible boolean combinations has exponential complexity, and is therefore undesirable for performance reasons. (Again, see \secref{boolExtras}.) 
+
+\subsection{Scope and Guarantees}
+
+\begin{definition}[Data Independence] We refer to IAC input point $e$ as \emph{data independent} if execution flow starting at $e$ is decided solely according to (i) boolean extra parameters and/or (ii) presence of extra fields. In particular, the values of non-boolean extra parameters (and other variables in the program) do not affect control flow.
+\end{definition}
+
+\begin{lemma}[Coverage] Let $e$ be a data-independent input point, such that the value of incoming IAC field $f$, arriving through $e$, flows into sink $s$. Then \ETool\ is guaranteed to reach $s$ with $f$ mapped to a test payload.
+	\begin{proof}[Proof Sketch] \Tool\ systematically enumerates all boolean combinations. This --- conjoined with the assumption that $e$ is data independent --- guarantees that at some point access to $f$ will be observed. Thus, $f$ will become an attack target (where only the presence, but not the value, of $f$ affects control flow). All continuations of the execution prefix leading to $f$ will be enumerated, which guarantees that a path $p$ starting at $e$, going through a read of $f$ and ending at $s$ will be traversed. Given $f$ is a non-boolean field, \Tool\ will initiate a test execution of $p$ with $f$ mapped to a test payload, which completes the proof.
+	\end{proof}
+\end{lemma}

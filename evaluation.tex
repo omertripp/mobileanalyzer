@@ -48,92 +48,174 @@ A visual illustration of the performance/coverage tradeoffs achieved by the diff
 \begin{table*}
 \begin{scriptsize}
 \begin{center}
-\begin{tabular}{l|c|c|c|c|c|c|c|c|c}
-\multicolumn{1}{c|}{\multirow{2}{*}{App Name}} & \multirow{2}{*}{Count} & \multirow{2}{*}{XAS} & \multirow{2}{*}{SQLi} & Unsafe  & UI  & {\tt Fragment}  & Java  & Native  & File  \\
- &  &  &  &  Reflection &  Spoofing &  Injection &  Crash &  Crash &  Manipulation \\
+\begin{tabular}{l|c|c|c|c|c|c|c|c|c|c}
+\multicolumn{1}{c|}{\multirow{2}{*}{App Name}} & \multirow{2}{*}{Version} & \multirow{2}{*}{Count} & \multirow{2}{*}{XAS} & \multirow{2}{*}{SQLi} & Unsafe  & UI  & {\tt Fragment}  & Java  & Native  & File  \\
+ &  & & &  &  Refl. &  Spoof. &  Injection &  Crash &  Crash &  Man. \\
 \hline
-\_Dropbox v2.3.8 & 4 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
-\_eBay v2.3.0.25 & 3 & \xmark & \xmark & \cmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-\_Evernote v5.1.2 & 7 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
-\_Facebook v3.3 & 4 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-\_Gmail v4.5-836823 & 2 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
-\_IBM Notes Traveler v9.0.0.0 201306202317 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-\_LinkedIn v3.0.2 & 6 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-\_NYTimes for Android v3.2.2 & 2 & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-\_YouTube v4.5.17 & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-Adobe AIR v3.7.0.209 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-Adobe Photoshop Express v1.3.3 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-Adobe Reader v10.6.0 & 3 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-Antivirus Security - FREE v3.2.3 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-Chrome Browser - Google v27.0.1453.90 & 1 & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-clalit.android-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.alibaba.aliexpresshd-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.android.vending-1 & 3 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
-com.box.android-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.cleanmaster.security-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.fibi-1 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.fitbit.FitbitMobile-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.fitnesskeeper.runkeeper.pro-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.google.android.apps.docs.editors.sheets-1. & 4 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.google.android.apps.m4b-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.google.android.apps.magazines-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.google.android.apps.maps-1. & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.google.android.apps.plus-1. & 10 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \cmark & \xmark \\
-com.google.android.GoogleCamera-1 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.google.android.maps.mytracks-1. & 3 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
-com.google.android.music-1. & 4 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.google.android.talk-2. & 1 & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.google.earth-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.hipmunk.android-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.ideomobile.hapoalim-1. & 12 & \cmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
-com.ideomobile.leumicard-1 & 2 & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.intsig.camscanner-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.leumi.leumiwallet-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.melodis.midomiMusicIdentifier.freemium-1. & 2 & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.mxtech.videoplayer.ad-1. & 2 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
-com.netgate-1 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.nike.plusgps-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.onoapps.cal4u-1 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.paypal.android.p2pmobile-1 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.runtastic.android-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.snapchat.android-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.ubercab-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.urbandroid.sleep-1. & 4 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
-com.viber.voip-1. & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.waze-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-com.yahoo.mobile.client.android.flickr-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-com.yelp.android-1. & 4 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-Contacts. & 7 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
-Dialer. & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-Facebook Messenger v2.5.3-release & 1 & \xmark & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-Facebook Pages Manager v1.4.1 & 1 & \xmark & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-Firefox Browser for Android v22.0 & 6 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \cmark \\
-GO Launcher EX v3.9.11 & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-Google Currents v2.1.0 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-Google Drive v1.2.182.26 & 5 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
-Google Finance v2.2.7 & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-Google Translate v2.7 & 2 & \xmark & \xmark & \cmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-GTasks v1.6.0.2 & 11 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
-IBM Connections v4.4.0 & 5 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-IBM Sametime Meetings v8.5.2.4 & 3 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-IBM Sametime v8.5.2.4 201304171550 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-IBM SmartCloud Meetings v8.5.2.1.201212060646 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-IMDB Movies And TV v3.2.2.103220310 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-Instagram v3.5.3 & 3 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-Mms & 3 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
-mobi.mgeek.TunnyBrowser-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-Opera browser beta v15.0.1162.59192 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-org.telegram.messenger-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-org.zwanoo.android.speedtest-1 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-Shazam v3.14.0-JB78059 & 5 & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-Skype - free IM and video calls v3.2.0.6673 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-Tango Text Voice and Video v2.10.48610 & 3 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
-TED v1.1.6 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-Tiny Flashlight + LED v4.9.4 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-WhatsApp Messenger v2.10.222 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
-XBMC remote control v2.0.1 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\ 
+com.dropbox.android & 230800 & 4 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+com.ebay.mobile & 43 & 3 & \xmark & \xmark & \cmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.evernote & 15120 & 7 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+com.facebook.katana & 228325 & 4 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.google.android.gm & 974 & 2 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+com.lotus.sync.traveler & 2013062023 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.linkedin.android & 56 & 6 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.nytimes.android & 5523 & 2 & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.google.android.youtube & 4517 & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.adobe.air & 3700209 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.adobe.psmobile & 10 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.adobe.reader & 77016 & 3 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.antivirus & 180265 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.android.chrome & 1453090 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+clalit.android & 12 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.alibaba.aliexpresshd & 56 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.android.vending & 80280020 & 3 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+com.box.android & 30200 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.cleanmaster.security & 10400566 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.fibi & 8 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.fitbit.FitbitMobile & 1772 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.fitnesskeeper.runkeeper.pro & 215 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.google.android.apps.docs.editors.sheets & 1314426 & 4 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.google.android.apps.m4b & 62 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.google.android.apps.magazines & 2014051213 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.google.android.apps.maps & 800001324 & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.google.android.apps.plus & 413004558 & 10 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \cmark & \xmark \\
+com.google.android.GoogleCamera & 22024130 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.google.android.maps.mytracks & 74 & 3 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
+com.google.android.music & 1514 & 4 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.google.android.talk & 21224130 & 1 & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.google.earth & 13294050 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.hipmunk.android & 102 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.ideomobile.hapoalim & 117 & 12 & \cmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
+com.ideomobile.leumicard & 42 & 2 & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.intsig.camscanner & 3302 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.leumi.leumiwallet & 18 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.melodis.midomiMusicIdentifier.freemium & 10602 & 2 & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.mxtech.videoplayer.ad & 700000070 & 2 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+com.netgate & 141 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.nike.plusgps & 99 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.onoapps.cal4u & 5 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.paypal.android.p2pmobile & 49 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.runtastic.android & 90 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.snapchat.android & 323 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.ubercab & 30618 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.urbandroid.sleep & 842 & 4 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+com.viber.voip & 61 & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.waze & 1019718 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.yahoo.mobile.client.android.flickr & 41700 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.yelp.android & 10000903 & 4 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.android.contacts & 19 & 7 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
+com.android.dialer & 19 & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.facebook.orca & 221196 & 1 & \xmark & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.facebook.pages.app & 232657 & 1 & \xmark & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+org.mozilla.firefox & 2013061803 & 6 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \cmark \\
+com.gau.go.launcherex & 234 & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.google.android.apps.currents & 130781200 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.google.android.apps.docs & 1218226 & 5 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
+com.google.android.apps.finance & 35 & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.google.android.apps.translate & 20700177 & 2 & \xmark & \xmark & \cmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+org.dayup.gtask & 1602 & 11 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+com.ibm.lotus.connections.mobile & 2013092105 & 5 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.ibm.android.sametime.meetings & 20130528 & 3 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.ibm.android.sametime & 2013041715 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.ibm.mobile.android.unyte & 20121206 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.imdb.mobile & 103220310 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.instagram.android & 197069 & 3 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.android.mms & 19 & 3 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
+mobi.mgeek.TunnyBrowser & 331 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.opera.browser.beta & 1600559192 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+org.telegram.messenger & 227 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+org.zwanoo.android.speedtest & 124 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.shazam.android & 78059 & 5 & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.skype.raider & 50469393 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.sgiggle.production & 53 & 3 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+com.ted.android & 18 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.devuni.flashlight & 139 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+com.whatsapp & 47672 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+fr.beungoud.xbmcremote & 47 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\ 
 \hline\hline
-\multicolumn{1}{c|}{{\bf 55/80}} & {\bf 163} & {\bf 6} & {\bf 1} & {\bf 4}  & {\bf 6}  & {\bf 8} & {\bf 30} & {\bf 1} & {\bf 1} \\
+\multicolumn{1}{c|}{{\bf 55/80}} & {\bf 163} & {\bf 5} & {\bf 1} & {\bf 4}  & {\bf 6}  & {\bf 8} & {\bf 30} & {\bf 1} & {\bf 1} \\
+%\_Dropbox v2.3.8 & 4 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+%\_eBay v2.3.0.25 & 3 & \xmark & \xmark & \cmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%\_Evernote v5.1.2 & 7 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+%\_Facebook v3.3 & 4 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%\_Gmail v4.5-836823 & 2 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+%\_IBM Notes Traveler v9.0.0.0 201306202317 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%\_LinkedIn v3.0.2 & 6 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%\_NYTimes for Android v3.2.2 & 2 & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%\_YouTube v4.5.17 & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%Adobe AIR v3.7.0.209 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%Adobe Photoshop Express v1.3.3 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%Adobe Reader v10.6.0 & 3 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%Antivirus Security - FREE v3.2.3 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%Chrome Browser - Google v27.0.1453.90 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%clalit.android-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.alibaba.aliexpresshd-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.android.vending-1 & 3 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+%com.box.android-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.cleanmaster.security-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.fibi-1 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.fitbit.FitbitMobile-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.fitnesskeeper.runkeeper.pro-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.google.android.apps.docs.editors.sheets-1. & 4 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.google.android.apps.m4b-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.google.android.apps.magazines-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.google.android.apps.maps-1. & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.google.android.apps.plus-1. & 10 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \cmark & \xmark \\
+%com.google.android.GoogleCamera-1 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.google.android.maps.mytracks-1. & 3 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
+%com.google.android.music-1. & 4 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.google.android.talk-2. & 1 & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.google.earth-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.hipmunk.android-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.ideomobile.hapoalim-1. & 12 & \cmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
+%com.ideomobile.leumicard-1 & 2 & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.intsig.camscanner-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.leumi.leumiwallet-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.melodis.midomiMusicIdentifier.freemium-1. & 2 & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.mxtech.videoplayer.ad-1. & 2 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+%com.netgate-1 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.nike.plusgps-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.onoapps.cal4u-1 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.paypal.android.p2pmobile-1 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.runtastic.android-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.snapchat.android-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.ubercab-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.urbandroid.sleep-1. & 4 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+%com.viber.voip-1. & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.waze-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%com.yahoo.mobile.client.android.flickr-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%com.yelp.android-1. & 4 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%Contacts. & 7 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
+%Dialer. & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%Facebook Messenger v2.5.3-release & 1 & \xmark & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%Facebook Pages Manager v1.4.1 & 1 & \xmark & \xmark & \cmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%Firefox Browser for Android v22.0 & 6 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \cmark \\
+%GO Launcher EX v3.9.11 & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%Google Currents v2.1.0 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%Google Drive v1.2.182.26 & 5 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
+%Google Finance v2.2.7 & 2 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%Google Translate v2.7 & 2 & \xmark & \xmark & \cmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%GTasks v1.6.0.2 & 11 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
+%IBM Connections v4.4.0 & 5 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%IBM Sametime Meetings v8.5.2.4 & 3 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%IBM Sametime v8.5.2.4 201304171550 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%IBM SmartCloud Meetings v8.5.2.1.201212060646 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%IMDB Movies And TV v3.2.2.103220310 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%Instagram v3.5.3 & 3 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%Mms & 3 & \xmark & \xmark & \xmark & \cmark & \xmark & \cmark & \xmark & \xmark \\
+%mobi.mgeek.TunnyBrowser-1. & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%Opera browser beta v15.0.1162.59192 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%org.telegram.messenger-1. & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%org.zwanoo.android.speedtest-1 & 1 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%Shazam v3.14.0-JB78059 & 5 & \cmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%Skype - free IM and video calls v3.2.0.6673 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%Tango Text Voice and Video v2.10.48610 & 3 & \xmark & \xmark & \xmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
+%TED v1.1.6 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%Tiny Flashlight + LED v4.9.4 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%WhatsApp Messenger v2.10.222 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
+%XBMC remote control v2.0.1 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\ 
+%\hline\hline
+%\multicolumn{1}{c|}{{\bf 55/80}} & {\bf 163} & {\bf 5} & {\bf 1} & {\bf 4}  & {\bf 6}  & {\bf 8} & {\bf 30} & {\bf 1} & {\bf 1} \\
 \end{tabular}
 \end{center}
 \end{scriptsize}
@@ -235,7 +317,7 @@ public String getProperty(String name, String defaultValue) {
   return p.toString(); }
 \end{lstlisting}
 \end{small}
-The return value of {\tt getProperty($\ldots$)} is an extra parameter obtained from the {\tt Bundle} object associated with the current {\tt Intent} (which, in turn, is retrieved via the {\tt getIntent().getExtras()} getter chain). Thus, in {\tt loadUrl($\ldots$)} variable {\tt url}, flowing into the {\tt loadUrlIntoView} call, presents an opportunity for an attack. This variable is defined
+The return value of {\tt getProperty($\ldots$)} is an extra parameter obtained from the {\tt Bundle} object associated with the current {\tt Intent} (which, in turn, is retrieved via the {\tt getIntent().getExtras()} getter chain). Thus, variable {\tt url} in {\tt loadUrl($\ldots$)}, flowing into the {\tt loadUrlIntoView} call, presents an opportunity for an attack. This variable is defined
 as the value of the {\tt 'url'} extra parameters, which can be set externally.  
 Thus, a malicious caller could launch the {\tt Activity} with an {\tt Intent} whose respective {\tt Bundle} maps {\tt 'url'} to an unintended value. The provided URL will consequently be loaded by Cordova and rendered within the {\tt WebView}.
 

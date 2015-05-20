@@ -1,0 +1,28 @@
+\section{Performance}
+
+\subsection{Probing}
+
+The goal of the detection stage is to decide for a given input point which tests should be applied to it. This is done by tracking, for the different security rules, (i) which relevant APIs are invoked while processing the probe input and (ii) the data arguments reaching each of the invocation points. The security rules each define necessary conditions for a vulnerability to manifest, and this is what detection tests for.
+
+In the example in \figref{techExample}, for instance, the {\tt Intent} above triggers three relevant API calls with respect to the memory-corruption rule. These are the {\tt loadLibrary($\ldots$)}, {\tt getDataString()} and {\tt getStringExtra($\ldots$)} invocations. The memory-corruption rule further checks that the value returned by {\tt getDataString()} is {\tt http://G0B/}. This is to ensure that the accessed {\tt Intent} is the input message and not another {\tt Intent}. Indeed, for a memory-corruption vulnerability to manifest with regard to the {\tt uri} field, two necessary conditions are to (i) load a native library (via {\tt System.loadLibrary($\ldots$)}) and (ii) read the data stored in the {\tt uri} field or extra parameters.
+
+As noted earlier, \Tool\ records \emph{all} accesses to user-defined data. Consequently, the call to {\tt getStringExtra($\ldots$)} is intercepted, making \Tool\ aware of the custom (or extra) parameter {\tt ``foo''}, which is not declared as part of the public IAC interface of the app (in the manifest file).
+
+\subsection{Path Coverage}
+
+\Tool\ aims for a practical tradeoff between performance and coverage. This is achieved in light of two observations:
+\begin{itemize}
+	\item Domination: We say that boolean extra $b$ \emph{dominates} another boolean extra $b'$ if retrieval of $b'$ from the {\tt Intent} is attempted when $b$ is assigned one of the truth values but not its negation. In the example in \figref{techExample}, {\tt ``b1''} dominates both {\tt ``b2''} and {\tt ``b3''}. The runtime monitoring code installed within the {\tt getBooleanExtra($\ldots$)} method reveals to \Tool\ that access to {\tt ``b2''} and {\tt ``b3''} is made only when {\tt ``b1''} is set to {\tt true}.
+	\item Independence: In practice, distinct boolean extras rarely flow into the same path condition. We have validated this experimentally. (See \secref{boolExtras}.) The upshot is that it is more effective to toggle one boolean extra at a time (linear complexity) rather than exhausting all possible value combinations (exponential complexity). As a limitation, \Tool\ would miss cases such as {\tt ``b2''} $\&\&$ {\tt ``b3''} in \figref{techExample}, which require simultaneous toggling of both {\tt ``b2''} and {\tt ``b3''}.
+\end{itemize}
+
+The combination of domination and independence leads to the following efficient algorithm for searching through assignments to discovered boolean extras: 
+\begin{itemize}
+	\item Domination: For an {\tt Intent} that exposes domination of boolean extra $b$ by  $b'$, only $b$ is toggled.
+	\item Independence: For an {\tt Intent} that exposes $n$ boolean extras $b_1 \ldots b_n$, where none of the booleans are pairwise related via domination, each of the booleans $b_i$ is negated in turn while retaining the previous value of the other booleans.
+\end{itemize}
+Independence reduces complexity from exponential to linear, and domination further reduces the number of assignments to be explored, thereby yielding an efficient exploration procedure.
+
+\begin{definition}[Independence and Domination] Given IAC input point $e$ and boolean extras $b$ and $b'$, we say that $b$ \emph{dominates} $b'$ under $e$ if in any execution starting at $e$, $b'$ is accessed if $b$ is assigned a specific truth but not the other (e.g., only when $b$ is {\tt true}). We say that $b$ is independent of $b'$ (under $e$) if $b$ is not dominated by $b'$ (under $e$).
+\end{definition}
+

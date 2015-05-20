@@ -1,0 +1,49 @@
+\section{Static Information-flow Security}\label{Se:analysis}
+
+In this section, we describe common techniques for performing static checking of information flows. We then describe inherent challenges that limit the accuracy, and thus also usability, of the analysis.
+
+\subsection{Scope}
+
+A common characteristic of many well-known vulnerability types --- including e.g. cross-site scripting (XSS), SQL injection (SQLi), log forgery, cross-site request forgery (XSRF), command execution, etc --- is that information flows between a statement reading untrusted user input (known as the \emph{source}) and a statement performing a security-sensitive operation (known as the \emph{sink}) without being properly sanitized and/or validated along the way. Vulnerabilities of this type are known as \emph{integrity} problems. 
+
+Another category of security problems that can be modeled as illegitimate information flow is \emph{confidentiality} problems. Here the source is a statement reading sensitive information, and the sink is a release point. Flow between the source and the sink without proper declassification results in exposure of confidential information to unauthorized observers.
+
+Integrity and confidentiality are dual categories, which together cover six of the ten most critical web security vulnerabilities \cite{OWASP:TOP10}. Automating the detection of integrity and confidentiality vulnerabilities is thus of immense value, especially given the size and complexity of industry-scale web and mobile applications. In addition, as suggested above, both of these categories reduce to reasoning about the legitimacy of information flows within the program, which is a classic application of program-analysis techniques.
+
+\subsection{Techniques}
+
+Language-based information-flow security is an intensive area of research~\cite{Sabelfeld&Myers}, which has also enjoyed impressive commercial impact with tools like IBM Security AppScan Source Edition and HP Fortify 360. There is a varied range of techniques for statically enforcing information-flow policies. These include different forms of program analysis \cite{XXX} as well as security type systems \cite{XXX}. We describe notable techniques in the following.
+
+The most basic and prevalent technique is \emph{taint analysis}. In taint analysis, a tag is attached to the data read by the source statement. This tag is propagated along data-flow transformations, such as string manipulations. The analysis accounts for sanitizers/validators by removing the tag from their output value. A vulnerability is flagged if a value reaching a sink statement carries a tag disallowed by the sink.
+
+To account for implicit flows \cite{XXX}, techniques have been developed to track not only data dependencies but also control dependencies between statements, such as the dependency of {\tt s$_2$} on {\tt s$_1$} in {\tt if (s$_1$) \{ s$_2$; \}}. The graph structure resulting from connecting the statements of a given program with data and control dependence edges is known as the \emph{system dependence graph} (\emph{SDG}) \cite{XXX}. Given an SDG, security analysis reduces to checking for each source statement $s$ whether (relevant) sink statements are reachable from $s$. This yields a more comprehensive security report, albeit at the cost of more false alarms.
+
+Yet another variant is known as \emph{string analysis}, where the distinguishing feature is explicit modeling of string values \cite{XXX} beyond merely tracking dependencies between statements. This enables handling of inline sanitization as well as elimination of false alarms by reasoning about the structure of the string flowing into the sink statement. However, because this is a more granular and thus expensive form of analysis, its scalability is limited.
+
+A final approach is to integrate security-induced information-flow constraints into the type system \cite{XXX} by extending the standard type system with security attributes. As an example, assuming {\tt src()} is a source statement and {\tt snk($\ldots$)} is a sink statement, the following program must not type check:
+\begin{quote}
+	{\tt x = src(); y = x; snk(y);}
+\end{quote}
+In effect, type checking reduces to propagation of type constraints, and so this also is a form of information-flow security analysis. 
+
+\subsection{Challenges and Limitations}
+
+Tracking information flows statically is a serious challenge. The analysis has to approximate the runtime behavior of the program in a scalable yet sufficiently precise manner. Specific challenges include e.g. the following:
+\begin{enumerate}
+	\item Heap objects and aliasing: The analysis must track flow of information into and out of the runtime heap. The difficulty is that in general, the number of runtime objects allocated by a program is unbounded. Thus, the analysis must create a finite (and ideally also compact) approximation of all the objects the application may allocate. This approximation leads to imprecise tracking of values flowing into and out of object fields.
+	\item Virtual method calls: To represent the control structure of the program, the analysis has to resolve virtual calls to possible callee methods. This can only be done precisely if the concrete types of objects acting as the receivers of virtual calls are resolved precisely. However, this is an undecidable problem, and so virtual calls are resolved imprecisely.
+	\item Deployment settings: The analysis is often unaware of deployment settings, such as the external storage (file system, database, etc), framework and application configuration files (such as the {\tt webmvc-context} XML file for Spring MVC), the host operating system, browser version, etc.
+	\item Path conditions: Another challenge is to model path conditions, which govern the execution of loops and conditional branches. These may depend on external circumstances (e.g., whether a plugin is installed), contain complex expressions that are hard or even impossible to evaluate statically, and in some cases be correlated (e.g., {\tt if (b) \{ s$_1$; \} $\ldots$ if (b) \{ s$_2$; \}}).
+	\item Lifecycle: Imprecision may result from complete or partial inability by the analysis to model lifecycle constraints. If a given event can only happen after another event has occurred (e.g., the {\tt onResume($\ldots$)} method of an Android application can only be invoked after {\tt onPause($\ldots$)}), then failure to account for this constraint could lead to infeasible security alarms.
+	\item Concurrency: If the application is multithreaded and/or supports asynchronous events, then memory updates resulting from interleaved execution of different execution units must be reflected by the analysis. Conservative treatment of all such behaviors typically leads to an excess of false alarms.
+	\item Reflection: Reflective behaviors, such as {\tt eval($\ldots$}) and property traversal in JavaScript, are a major problem for static analysis tools. These 
+	often assume that the program is free of such behaviors, as otherwise the analysis becomes highly conservative.  
+\end{enumerate}
+Other dimensions and additional discussion are found in \cite{FHST:ENTCS} (Section 2 in particular).
+
+Approximating the behavior of the program along all of the above axes (and more) naturally impacts the quality of the results reported by the analysis. Even more severely, combining sources of imprecision often has a multiplicative rather than additive effect. As an example, wrong resolution of a virtual call could lead to the discovery of fallacious aliasing relationships, which in turn lead to more infeasible resolutions for virtual calls, etc.
+
+
+
+%Static security analysis
+%JavaScript language/analysis

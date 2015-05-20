@@ -1,0 +1,12 @@
+\section{Scope and Guarantees}
+
+\begin{definition}[Data Independence] We refer to IAC input point $e$ as \emph{data independent} if execution flow starting at $e$ is decided solely according to (i) boolean extra parameters and/or (ii) presence of extra fields. In particular, the values of non-boolean extra parameters (and other variables in the program) do not affect control flow.
+\end{definition}
+
+\begin{definition}[Independence and Domination] Given IAC input point $e$ and boolean extras $b$ and $b'$, we say that $b$ \emph{dominates} $b'$ under $e$ if in any execution starting at $e$, $b'$ is accessed if $b$ is assigned a specific truth but not the other (e.g., only when $b$ is {\tt true}). We say that $b$ is independent of $b'$ (under $e$) if $b$ is not dominated by $b'$ (under $e$).
+\end{definition}
+
+\begin{lemma}[Coverage] Let $e$ be a data-independent input point, such that the value of incoming IAC field $f$, arriving through $e$, flows into sink $s$. Then \Tool\ is guaranteed to reach $s$ with $f$ mapped to a test payload.
+	\begin{proof}[Proof Sketch] \Tool\ systematically enumerates all boolean combinations. This --- conjoined with the assumption that $e$ is data independent --- guarantees that at some point access to $f$ will be observed. Thus, $f$ will become an attack target (where only the presence, but not the value, of $f$ affects control flow). All continuations of the execution prefix leading to $f$ will be enumerated, which guarantees that a path $p$ starting at $e$, going through a read of $f$ and ending at $s$ will be traversed. Given $f$ is a non-boolean field, \ETool\ will initiate a test execution of $p$ with $f$ mapped to a test payload, which completes the proof.
+	\end{proof}
+\end{lemma}

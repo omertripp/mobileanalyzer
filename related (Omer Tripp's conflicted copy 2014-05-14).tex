@@ -1,0 +1,43 @@
+\section{Related Work}\label{Se:related}
+
+% http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6263963
+
+Maji et al. present an experimental evaluation of the robustness of Inter-component Communication (ICC) in Android \cite{MAB:DSN12}. Their results indicate that exceptional situations are often handled poorly. Even more severely, unprivileged process can crash the Android runtime via ICC channels. 
+
+% http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6228987
+
+The need for specialized testing for mobile apps
+
+% http://delivery.acm.org/10.1145/2440000/2435379/p209-rastogi.pdf?ip=129.34.20.23&id=2435379&acc=ACTIVE%20SERVICE&key=90259622823F2C32%2E4A4E901FFFFFEB40%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35&CFID=281389948&CFTOKEN=24789755&__acm__=1399997630_9dbc819e372867864ad3011ad7c79d7b
+
+The AppsPlayground framework, developed by Rastogi et al. \cite{RCE:CODAPSY13}, performs dynamic security analysis of Android apps to detect malware as well as grayware apps.  AppsPlayground has a modular deign, enabling usage of different exploration techniques, including event triggering, fuzz testing and context-sensitive crawling. The choice of detection technique is also modular, permitting e.g. taint tracking, API monitoring and kernel-level monitoring.
+
+% http://css.csail.mit.edu/6.858/2012/readings/android.pdf
+
+Enck et al. discuss the security aspects of Android ICC \cite{EOM:SP09}. In particular, they refer to security enforcement via label-oriented mediation. Two important observations that they make are that (i) Android's permission model only restricts access to components, but unlike domain type enforcement, it does not provide information-flow guarantees; and (ii) the default security specification for a public component permits any application to access it. Both of these architectural choices increase the risk of security vulnerabilities. Enck et al. conclude that the Android security model is nontrivial to reason about, and that holistic security concerns (due to flow between functionalities) are left unaddressed by the model.
+
+% http://dl.acm.org/citation.cfm?id=2000018
+
+The ComDroid tool \cite{CFGW:MOBISYS11}, created by Chin et al., performs static detection of application communication vulnerabilities. The authors identify two categories of vulnerabilities: unauthorized Intent receipt, whereby an implicit Intent is intercepted by a malicious app, and Intent spoofing, whereby a malicious application sends an Intent to an exported component without its expecting it. ComDroid checks for vulnerabilities pertaining to the first category via intraprocedural flow-sensitive static analysis.
+
+% http://dl.acm.org/citation.cfm?id=2381948
+
+
+
+The authors propose modifications to the Android platform to detect and protect inter-application messages that should have been intra-application messages.
+
+% http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6573084&tag=1
+
+The authors prevented these exploits by modifying Android's Intent handling behavior to err on the side of safety except where the developer seems to explicitly specify otherwise.
+
+% http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6641043
+
+Their approach generates test cases to check whether components are vulnerable to attacks, sent through intents, that expose personal data.
+
+% http://selab.fbk.eu/ceccato/papers/2013/ast2013.pdf
+
+This work spots mismatches between the intended behavior declared by an application and the observed functionalities implemented in its code.
+
+% http://www.thinkmind.org/index.php?view=article&articleid=icsea_2012_23_10_10240
+
+Authors propose a security testing approach which aims to check whether Android applications are not vulnerable to malicious intents.

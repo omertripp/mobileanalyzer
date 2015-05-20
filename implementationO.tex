@@ -1,0 +1,325 @@
+\section{Advanced Features}
+
+In this section, we describe the design and implementation of the \Tool\ system.
+
+\subsection{The \Tool\ Architecture}
+
+Conceptually, \Tool\ mimics a malicious application. It first collects information about its neighboring apps, as documented by their public IPC interface, and then applies different forms of attack. While testing the app, \Tool\ simultaneously searches for additional attack points beyond the declared ones. This yields an iterative and comprehensive testing process. 
+
+In our initial implementation of \Tool, we packaged its functionality as a mobile app to directly simulate a malicious app installed on the device. For performance and stability reasons, we later rewrote \Tool\ as an external testing algorithm that utilizes the Android Debug Interface (ADB) capabilities, and in particular the Activity Manager ({\tt am}), to gain access to the target app. A 
+
+\Tool\ consists of four main modules: instrumentation, mutation, detection and validation. We survey each in turn below. For now, we suffice with a high-level explanation of how these four modules interlock to enable effective testing. The interaction between the different modules is depicted in \figref{architecture}.
+
+Instrumentation achieves the glass-box effect of monitoring internal app events and behaviors. It is achieved fully automatically, via insertion of debug breakpoints into the app, enabling effective detection of candidate interface points as well as validation of attempted attacks. Attacks are formed via mutation of benign parameters. 
+
+\begin{figure}
+\includegraphics[width=\columnwidth]{Architecture.pdf}
+\caption{\label{Fi:architecture}High-level architecture of the \Tool\ system}
+\end{figure}
+
+The mutation rules are specified in a knowledge database built into the testing engine. These describe how to transform benign IPC messages into attacks as well as how to vary the attack vector to gain more coverage. The knowledge base also specifies how to detect whether an attack vector is potentially relevant, and validate the success of a given attack, which is done with respect to observable events: both those captured by instrumentation hooks and external events, such as writing to the standard log file or sending of HTTP requests.
+
+\subsection{Technical Overview}
+
+We now proceed to an in-depth overview of the main \Tool\ modules. We describe each in turn.
+
+\paragraph{Instrumentation} To insert monitoring code into the target app, \Tool\ utilizes the Java Debug Wire Protocol (JDWP), which is supported by the Dalvik Virtual Machine (VM). Instrumentation hooks are realized as debug breakpoints, which \Tool\ can place into any Android app from the outside without the need to decompile/reassemble it, rewrite its bytecode, or apply any other form of intrusive transformation. 
+%
+Within a debug breakpoint, \Tool\ has full access to all aspects of the program state, including local variables, the heap graph, the system state, etc. This enables arbitrary detection and validation checks, expressed on a per-rule basis as pure (i.e., side-effect free) Java functionality. 
+
+\TODO{We had many problems deciding when/where to inject a breakpoint. We should talk about that too.}
+
+\paragraph{Detection}
+
+\paragraph{Validation}
+
+\paragraph{Mutation}
+
+
+
+\textit{Log Listener}. We listen to the Android log facilitiy (a.k.a
+logcat) in order to catch exceptions in native code. Such exceptions
+usually indicate memory corruption vulnerabilities.
+
+\textit{HTTP Server.} In order to catch Cross-Application Scripting
+(XAS) vulnerabilities in propietary embedded browsers (i.e. ones which
+are not implemented on top of \textit{WebView}) we include our on
+HTTP Server. We use this server in the following way; Our XAS specific
+payload contains a JavaScript (JS) code that redirects the browser
+to our HTTP Server. Thus an incoming request on our HTTP Server reflects
+an execution of our JS payload, i.e. a vulnerability to XAS.
+
+\textit{Security Rules. }The Security knoweldge is provided to the
+The Mobile Analyzer engine by a set of rules. Each rule is composed
+of Detection, Mutation, Validation methods. The Detection method indicates
+the Scan Manager to whether invoke the Rule's Mutation on a specific
+application component and data. The Mutation methods changes the Payload's
+data (explained in Section \ref{sub:Modus-Operandi}) to a Rule specified
+data. The Validation method validates whether the app component invocation
+with the mutated data has caused a security vulnerablitiy. In addition,
+each rule includes a set of breakpoints to place when invoking the
+target application component with the mutated data.
+
+
+\subsection{Modus Operandi\label{sub:Modus-Operandi}}
+
+The security testing has multiple interleaved phases.
+
+\textit{Exploration}. In this phase the tool learns the various external
+interfaces of the target application.Initially it statically parses
+the Android Manifest file (\texttt{AndroidManifest.xml}) and tries
+to find public application components (at the time of writing we only
+support scanning activities). For each detected component it generates
+a Payload object which reflects the component and the target data
+that we will mutate during the testing stage. At first the target
+data is the Intent's \texttt{data} field. \textit{Testing}. In this
+phase the tool goes over all of available Payloads and Rules and runs
+the detection method of each rule on the Payload. If the detection
+has passed, for each Mutation defined by the Rule, the tool changes
+the Payload's data and exercises (in debug mode) the target application
+with the mutated Payload. In addition, It places a set of defined
+as per defined by the Rule. The total number of generated tests is
+therefore 
+\[
+N=\sum_{\underset{D(r,p)=T}{p\in P,r\in R:}}|M(r)|
+\]
+
+
+where $P$ and $R$ are the payloads and rules sets respectively and
+$M(r)$ and $D(r)$ are the mutation and detection of rule $r$. 
+
+For example, in order to test for SQL Injection kind of vulnerabilities,
+the malicious input will contain and apostrophe character ('). and
+the set of breakpoints will include the \texttt{SQLiteDatabase.execSQL}
+API.\textit{ Validation}. In this phase the tools tries to infer whether
+the target app is susceptible to security vulnerabilities by using
+either the Debugger, Log Listener, or HTTP Server. For instance, if
+the target app is susceptible to SQL Injection, using the Debugger,
+during the testing, a breakpoint will be hit on some of the SQL sensitive
+APIs, such as \texttt{SQLiteDatabase.execSQL.}During the breakpoint
+hit, the Debugger exfiltrates the method's arguments, revealing that
+the apostrophe was not sanitizied, which proves that the target app
+is vulnerable to SQL Injection.
+
+\begin{algorithm}[t]
+\DontPrintSemicolon
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\KwIn{$(R,I)$ \tcp*[h]{testing capabilities}}\;
+\KwOut{$out$ \tcp*[h]{detected vulnerabilities}}\;
+\Begin{
+{$E \longleftarrow \textup{declared interface points}$}\; \\
+{$out \longleftarrow \emptyset$}\; \\
+\While{$E \neq \emptyset$}{
+		$e \longleftarrow \textup{choose from}\ E$\; \\
+		$E \longleftarrow E \setminus \{ e \}$\; \\
+		\ForEach{$(D,M,V) \in $R}{
+			\If{$D(e)$}{
+				\ForEach{$m \in M(e)$}{
+					$p(e,m) \longleftarrow \textup{create payload}$\; \\
+					$r \longleftarrow \textit{attack($p(e,m)$, $I$)}$\; \\
+					\If{$V($r$,$e$,$E$)$}{
+						$out \longleftarrow out \cup \{ r \}$\; \\					
+					}
+				}
+			}
+		}
+	}
+}
+\caption{\label{Al:maalg}Outline of the algorithm with extras, where $D$, $M$, $V$ and $E$ are the detection, mutation, validation and instrumentation modules, respectively}
+\end{algorithm}
+
+
+\subsection{Optimizations}
+
+\paragraph{Test Pruning via Probe Templates}
+
+\TODO{Another item here...}
+
+%\subsubsection{Increasing Scan Coverage: Extra Parameters Dynamic Detection}
+%
+As mentioned in Section {[}ADD XREF HERE{]}, Intent objects include
+data in two different fields; in the \textit{data} \texttt{Uri} field
+and in the \textit{extras} \texttt{Bundle}. During the \textit{Exploration
+}phase our artifact parses the \texttt{AndroidManifest.xml} file in
+order to infer the various public interfaces of the target app. The
+\texttt{AndroidManifest.xml} only gives our agent intel about the
+existence of attackable\textit{ data} \texttt{Uri} fields. Attacking
+the \textit{extras} \texttt{Bundle}, a legitimate input to the target
+app, however, is by far more challenging, since the tool must realize
+about the \texttt{Bundle}'s keys; such keys are not listed on the
+Android Manifest file. 
+
+The general approach that our tool takes in order to tackle this challenge
+is to dynamically reason about the used \textit{extras} keys, by putting
+breakpoints using the \textit{Debugger}, on relevant APIs that consume
+data from the \textit{extras }\texttt{Bundle}. Generally whenever
+our tool encounters a new extras, it genereates a new Payload that
+targets that extra. The scan stops when it reaches the fix-point,
+i.e. no more new extras have been dynamically learned.
+
+Whenever the application code reads an extra, e.g. by calling \texttt{Intent.getStringExtra(String
+key)}, our tool must link that extra with its Intent instance. While
+this is fairly easy for the direct \texttt{Intent.get}\texttt{\textit{{[}Type}}\texttt{{]}Extra}
+calls (by observing the 'this' parameter during the breakpoint), it's
+more complicated for indirect extra fetches via their embedding Bundle.
+The common practice is as follows:
+
+\begin{lstlisting}
+Intent i = this.getIntent();
+Bundle b = i.getExtras();
+String url = b.getString(``url'')
+\end{lstlisting}
+In order to link the extra with its Intent instance, our tool dynamically
+constructs the following tree; the\textit{ }tool first saves the \textit{Remote
+Unique ID} {[}ADD EXTERNAL REFERENCE / EXPLANATION HERE{]} of the
+\texttt{Bundle} object within the \texttt{Intent}. This is the root
+of the tree. Each Bundle clone (done by the Bundle's constructor)
+is added as a child. Whenever a \texttt{Bundle.get{[}}\texttt{\textit{Type}}\texttt{{]}(String
+key)}is called, we can link back to the Intent by traversing the tree
+up to the root {[}ADD NICE GRAPH HERE{]}. This mechanism works fairly
+well as per the implementation of the \texttt{Intent.getExtras()}
+method:
+\begin{lstlisting}
+public Bundle getExtras() {
+  return (mExtras != null) ? new Bundle(mExtras) : null; }
+\end{lstlisting}
+Our general Algorithm \ref{AlgorithmExtraParams} supports three configurations;
+The configurations differ by their $bruteforce$ procedure. The first
+configuration only detects String extras, thus $bruteforce$ is the
+empty implementation. The second and third configuration also detect
+Boolean extras. The difference between the last two configurations
+is the way the algorithm treats extra booleans. In the second configuration,
+as depicted by Procedure \ref{AlgorithmBruteforceLinear}, for each
+newly detected Boolean extra, we will invoke another test with its
+negative value and the current path condition. We call this configuration
+\textit{linear bruteforce} as the number of test is linear in the
+number of newly booleans. This configuration assumes \textit{independence}
+of boolean extras, i.e. it will achieve maximum coverage for the code
+depicted by Figure \ref{fig:Indepedent-boolean-extras}. In the third
+configuration, as depicted by Procedure \ref{AlgorithmBruteforceExp},
+we try all of the possible boolean assignments of the newly detected
+Boolean extras. We call this configuration \textit{exponential bruteforce}
+as the number of tests is exponential in the number of newly detected
+booleans. This configuration assumes \textit{dependence} of new Boolean
+extras, i.e. it will acheive maximum coverage for the code depicted
+by Figure \ref{fig:Depedent-boolean-extras}
+
+\begin{algorithm}[t]
+\DontPrintSemicolon
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\KwIn{$(r,e,E)$}\;
+\Begin{
+	{$H \longleftarrow \textup{Extra Params Storage}$}\; \\
+	{$B \longleftarrow \emptyset$}\; \\
+	{$S \longleftarrow \emptyset$}\; \\
+	{$X \longleftarrow \textit{Get Extra Parameter Results from r}$}\; \\
+	{$P \longleftarrow \textit{Get Extra Parameter Strings Results from e}$}\; \\
+	\ForEach{$g \in X$}{
+		{$x=(n,t,v) \longleftarrow\textit{Get Type, Name and Value from g}$}\; \\
+		\If{$(n,t)\not\in H$} {
+			{$H \longleftarrow H\cup{\{n\}}$}\; \\
+			{$a \longleftarrow\textit{Get Target App Component from g)}$}\; \\
+			\If{$t\textbf{ is }\textit{Boolean}$} {
+				{$B \longleftarrow B \cup{\{x\}}$}\; \\
+			}
+			\If{$t\textbf{ is }\textit{String}$} {
+				{$S \longleftarrow S \cup{\{x\}}$}\; \\
+			}
+		}
+	}
+	\ForEach{$s \in S$}{
+		{$\psi \longleftarrow \textit{Generate a Payload for (e,s)}$}\; \\
+		{$E \longleftarrow E \cup{\{\psi\}}$}\;
+	}
+	\ForEach{$s \in S \cup P$}{
+		{$bruteforce(B,H,E,e,s)$}\;
+	}
+
+}	
+\caption{\label{Al:maalg}Outline of extras detection algorithm implemented as a validation rule V}
+\label{AlgorithmExtraParams}
+\end{algorithm}
+
+\begin{procedure}[t]
+\DontPrintSemicolon
+\Begin{
+	\ForEach{$b \in B$}{
+		{$v \longleftarrow \textup{Get extra param value from b}$}\;
+		{$n \longleftarrow \textup{Get extra param name from b}$}\;
+		{$\psi \longleftarrow \textit{Generate a Payload from }(e,s,(n,\lnot v))$}\;
+		{$E \longleftarrow E \cup{\{\psi\}}$}\;
+	}
+}	
+\caption{bruteforceLinear(B,H,E,e,s)}
+\label{AlgorithmBruteforceLinear}
+\end{procedure}
+
+\begin{procedure}[t]
+\DontPrintSemicolon
+\Begin{
+	\ForEach{\textup{Boolean assignment} a on B \textup{except the current assignment}} {
+		{$\psi \longleftarrow \textit{Generate a Payload from }(e, s, a)$}\;
+		{$E \longleftarrow E \cup{\{\psi\}}$}\;
+	}
+}	
+\label{AlgorithmBruteforceExp}
+\caption{bruteforceExponential(B,H,E,e,s)}
+\end{procedure}
+
+\begin{figure}
+\begin{lstlisting}
+Boolean foo = intet.getBooleanExtra(``foo'', False)
+if (foo) {
+  Boolean bar = intet.getBooleaExtra(``bar'', False)
+  Boolean baz = intet.getBooleanExtra(``baz'', False)
+  if (bar == True) {
+    /* security vulnerabiltiy here */ }
+if (baz == True) {
+  /* another security vulnerabiltiy here */ } }
+\end{lstlisting}
+\caption{\label{fig:Indepedent-boolean-extras}Indepedent boolean extras (bar
+and baz)}
+\end{figure}
+
+
+\begin{figure}
+\begin{lstlisting}
+Boolean foo = intet.getBooleanExtra(``foo'', False)
+if (foo) {
+  Boolean bar = intet.getBooleanExtra(``bar'', False)
+  Boolean baz = intet.getBooleanExtra(``baz'', False)
+  if ((bar == True) && (baz == True)) {
+    /* security vulnerabiltiy here */ } }
+\end{lstlisting}
+\caption{\label{fig:Depedent-boolean-extras}Depedent boolean extras (bar and
+baz)}
+\end{figure}
+
+
+
+%\subsubsection{Test Pruning by Probing}
+%
+The naive approach is that $D(r,p)$ is always $T$, which results
+in $N=|P|\sum_{r\in R}|M(r)|$ tests which can be cumbersome if the
+number of mutations is large. Thus creating a sophisticated detection
+rule $D(r,p)$ can potentially reduce the number of generated tests. 
+
+The key observation here is that one benign test probe can indiciate
+to multiple tests whether or not they have a potential to detect a
+true positive. The idea is to compute the API reachability of each
+payload. As a first step, each payload is mutated with a benign string
+that uniquely identifies the tool, e.g. \texttt{http://GB<ID>/}. Then,
+the tool invokes the payload with all breakpoints set. The tool then
+saves the list of hit breakpoints for each payload. As a further optimization,
+it can save only hit breakpoints that have received the unique string.
+The second step is that for each payload, to only invoke rules that
+their list of defined breakpoints intersects with the list of saved
+payload hit breakpoints. While this approach is not sound, our ampiric
+results (Section XX) show only a slight decrease in true positives
+with a drastic improvement in performance.
+
+
+\subsubsection{Test Pruning by Rule Joining}
+%

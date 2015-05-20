@@ -1,0 +1,169 @@
+\section{Core Algorithm}\label{Se:corealg}
+
+In this section, we describe the core \Tool\ algorithm. We defer description of advanced features to the next section. To illustrate points in the technical discussion, we refer throughout this and the next sections to the example in \figref{techExample}.
+
+\begin{figure}
+\begin{lstlisting}[showstringspaces=false]
+class WriteActivity extends Activity {
+
+ static { System.loadLibrary("native"); }
+
+ protected void onCreate(Bundle savedInstanceState) {
+  super.onCreate(savedInstanceState);
+  setContentView(R.layout.activity_write);
+  Intent intent = this.getIntent();
+  /* Bundle bundle = intent.getBundle(); // A1 */	
+  String data = intent.getDataString();	
+  /* String data = bundle.getString("foo"); // A1 */		
+  File target = new File(this.getFilesDir(),"log");
+  int fd = NativeIO.open(target.getAbsolutePath());	
+  int size = NativeIO.write(fd, data);		 
+  String fooExtra = intent.getStringExtra("foo");
+  if (fooExtra == null) return;	
+  SQLiteDatabase db = ...;
+  db.execSQL(String.format("UPDATE ... 
+  				WHERE name='%s'", fooExtra));	
+  boolean b1 = intent.getBooleanExtra("b1", false);
+  /* boolean b1 = bundle.getBoolean("b1", false); // A1 */		
+  /* if (true == b1) {
+   boolean b2 = intent.getBooleanExtra("b2",false);
+   boolean b3 = intent.getBooleanExtra("b3",false);
+   if (true == b2)
+    db.execSQL(String.format("UPDATE ... 
+    				WHERE name='%s'", fooExtra));
+   if (true == b3)
+    db.execSQL(String.format("UPDATE ... 
+    				WHERE name='%s'", fooExtra));
+   if ((true == b2) && (true == b3))
+    db.execSQL(String.format("UPDATE ... 
+    				WHERE name='%s'", fooExtra)); 
+  } // A2 */ } }
+\end{lstlisting}
+\caption{\label{Fi:techExample}An \texttt{Activity} Suffering from IAC Vulnerabilities}
+\end{figure}
+
+\subsection{Setup}
+
+The testing session begins by deploying the target app in debug mode. This is done to enable insertion of debug breakpoints into the app as a means to monitor internal events (i.e., events that are externally invisible, such as method invocations) during the app's execution. Specifically, debug breakpoints are installed at the entry location of (i) methods that access user input (e.g., {\tt Intent.getDataString()} and {\tt Intent.getStringExtra($\ldots$)}) and (ii) sink methods (e.g., {\tt SQLiteDatabase.execSQL($\ldots$)} and {\tt System.loadLibrary($\ldots$)}).
+
+Once the target app is deployed, \Tool\ obtains --- via the {\tt apktool} utility --- its manifest file. Parsing the manifest reveals the set of {\tt Activity}s defined by the app that are both public and exported. These are reachable directly via {\tt Intent}s, and so the first IAC inputs created by \Tool\ are benign {\tt Intent}s, such as the following:
+\begin{lstlisting}[numbers=none]
+Intent { cmp=...WriteActivity act=android...MAIN 
+	uri=http:$//$G0B/ with Extras Bundle[{}]}
+\end{lstlisting}
+The data field, {\tt uri}, of the initial {\tt Intent}s is populated with a unique signature (in the above case: {\tt http://G0B/}).
+
+\subsection{Detection}\label{Se:detectionSubsec}
+
+The goal of the detection stage is to decide for a given input point which tests should be applied to it. This is done by tracking, for the different security rules, (i) which relevant APIs are invoked while processing the probe input and (ii) the data arguments reaching each of the invocation points. The security rules each define necessary conditions for a vulnerability to manifest, and this is what detection tests for.
+
+In the example in \figref{techExample}, for instance, the {\tt Intent} above triggers three relevant API calls with respect to the memory-corruption rule. These are the {\tt loadLibrary($\ldots$)}, {\tt getDataString()} and {\tt getStringExtra($\ldots$)} invocations. The memory-corruption rule further checks that the value returned by {\tt getDataString()} is {\tt http://G0B/}. This is to ensure that the accessed {\tt Intent} is the input message and not another {\tt Intent}. Indeed, for a memory-corruption vulnerability to manifest with regard to the {\tt uri} field, two necessary conditions are to (i) load a native library (via {\tt System.loadLibrary($\ldots$)}) and (ii) read the data stored in the {\tt uri} field or extra parameters.
+
+As noted earlier, \Tool\ records \emph{all} accesses to user-defined data. Consequently, the call to {\tt getStringExtra($\ldots$)} is intercepted, making \Tool\ aware of the custom (or extra) parameter {\tt ``foo''}, which is not declared as part of the public IAC interface of the app (in the manifest file).
+
+\subsection{Testing/Validation}
+
+Having established the necessary conditions for a memory-corruption vulnerability via the {\tt uri} field, \Tool\ attempts different mutations of the value assigned to {\tt uri}. Examples include
+\begin{lstlisting}[numbers=none]
+Intent { cmp=...WriteActivity act=android...MAIN 
+	uri=aaaaa$\ldots$aaaaa }
+\end{lstlisting}
+and
+\begin{lstlisting}[numbers=none]
+Intent { cmp=...WriteActivity act=android...MAIN 
+	uri=%s%s%s%s%s%s%s%s%s%s%s%s%s%s }
+\end{lstlisting}
+
+\Tool\ confirms for each of the payloads whether a vulnerability has been exposed. In the example in \figref{techExample}, the {\tt uri} field of the {\tt Intent} is read into local variable {\tt data} that flows into a {\tt NativeIO.write($\ldots$)} call.  The first payload --- containing a long sequence of {\tt 'a'} characters --- causes this operation to crash, which validates the threat of memory corruption.
+
+Beyond visible indications, such as a complete crash, \Tool\ has several other means to validate whether a vulnerability had been exposed:
+\begin{enumerate}
+	\item Code monitoring: The same monitors used for detection are also used for validation.
+	Values reaching security-sensitive operations are observed via run-time handlers 
+	triggered in response to hitting debug breakpoints.
+	\item Log listener: \Tool\ tracks updates to the standard log files provided by the Android platform. 
+	\item HTTP listener: A second output that \Tool\ listens on is outbound HTTP traffic. This monitoring method is used primarily to validate XAS vulnerabilities.
+\end{enumerate} 
+
+\subsection{Iterative Loop}\label{Se:iterative}
+
+Testing resumes through implicit input points. Recall that during the detection phase \Tool\ observed access to custom parameter {\tt ``foo''} via a {\tt getStringExtra($\ldots$)} call. {\tt ``foo''} is consequently enqueued for detection and testing. The first step, detection, is achieved via the {\tt Intent}
+\begin{lstlisting}[numbers=none]
+Intent { cmp=...WriteActivity act=android...MAIN 
+	uri=http:$//$G0B/ with Extras Bundle[{foo=http:$//$G4B/}]}
+\end{lstlisting}
+The unique signature {\tt http://G4B/} is now associated with the custom parameter {\tt ``foo''}. 
+
+Note, importantly, that aside from setting {\tt ``foo''}, the new {\tt Intent} is exactly identical to the original {\tt Intent} leading to the discovery of this custom parameter, including the exact probe value attached to the {\tt uri} field. This is to ensure that the control flow leading to the access to {\tt ``foo''} is preserved.
+
+With {\tt ``foo''} set, {\tt WriteActivity} additionally exposes the {\tt SQLiteDatabase.execSQL($\ldots$)} sink and the {\tt ``b1''} custom boolean parameter. The detection step reveals that {\tt ``foo''} is an admissible candidate for SQL-injection (SQLi) tests, as the (unique) value of {\tt ``foo''} is reflected in the argument flowing into {\tt execSQL($\ldots$)}. This triggers the sending of payload
+\begin{lstlisting}[numbers=none]
+Intent { cmp=...WriteActivity act=android...MAIN uri=http:$//$G0B/
+	with Extras Bundle[{foo=G'5B}]}
+\end{lstlisting}
+(with the apostrophe metatoken), which discloses an SQLi vulnerability. The iterative process then resumes with {\tt ``b1''}.
+ 
+\subsection{Formal Description}
+
+\algref{maalg} summarizes the complete flow of the \Tool\ algorithm. The starting point is to instrument the target app to record sink invocations as well as accesses to user-provided data. Next, \Tool\ obtains the declared IAC input points $E$ of the subject application via analysis of its manifest file. These seed the iterative testing process. The fixpoint loop iterates over $E$, picking at each iteration a candidate input point $e$ and removing it from the worklist.
+
+\begin{algorithm}[t]
+\DontPrintSemicolon
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+\KwIn{$(D,M,V,I)$ \tcp*[h]{testing capabilities}}\;
+\KwIn{$A$ \tcp*[h]{subject mobile app}}\;
+\KwOut{$O$ \tcp*[h]{detected vulnerabilities}}\;
+\Begin{
+	$A' \longleftarrow I(A)$ \tcp*[h]{instrument $A$}\; \\
+	$E$ $\longleftarrow$ declared interface points of $A$\; \\
+	$O \longleftarrow \emptyset$\; \\
+	\While{$E \neq \emptyset$}{
+		$e$ $\longleftarrow$ choose from $E$\; \\
+		$E \longleftarrow E \setminus \{ e \}$\; \\
+		\ForEach{$m \in M(e)$}{
+			{$b \longleftarrow D(m,e)$}\; \\
+			\If{$b$}{
+				$p[m,e] \longleftarrow \text{create payload for $e$ with $m$}$\; \\
+				$(r,E') \longleftarrow \text{fire $p[m,e]$}$\; \\
+				$E \longleftarrow E \cup E'$\; \\
+				\If{$V(r)$}{
+					$O \longleftarrow O \cup \{ r \}$\;
+				}
+			}
+		}
+	}
+}
+%\Begin{
+%	{$E \longleftarrow \text{declared interface points of $A$}$}\; \\
+%	{$A' \longleftarrow I(A)$ \tcp*[h]{instrument $A$}}\; \\
+%	{$out \longleftarrow \emptyset$}\; \\
+%	\While{$E \neq \emptyset$}{
+%		{$i \longleftarrow \text{choose from}\ I$}\; \\
+%		{$I \longleftarrow I \setminus \{ i \}$}\; \\
+%		\ForEach{$m \in M(i)$}{
+%			{$b \longleftarrow D(i,m)$}\; \\
+%			\If{$b$}{
+%				$p[i,m] \longleftarrow \text{create payload for $i$ and $m$}$\; \\
+%				$(r,E') \longleftarrow \text{fire $p[i,m]$}$\; \\
+%				$E \longleftarrow E \cup E'$\; \\
+%				$v \longleftarrow V(r)$\; \\
+%				\If{$v$}{
+%					$out \longleftarrow out \cup \{ r \}$\; 
+%				}
+%			}
+%		}
+%	}
+%}			
+\caption{\label{Al:maalg}Outline of the Core \Tool\ Algorithm, where $D$, $M$, $V$ and $I$ are the Detection, Mutation, Validation and Instrumentation, Respectively}
+\end{algorithm}
+
+
+For the current input point $e$, the next step is to check whether $e$ satisfies the necessary conditions for each type $m$ of attack. This is achieved by the detection algorithm with the $D(m,e)$ call. Successful detection leads to the creation and application of a payload $p[m,e]$. Exercising the instrumented app $A'$ with $p[m,e]$ yields two artifacts: additional input points $E'$ (discovered by monitoring accesses to custom parameters) and recording of app behaviors/outputs $r$ for validation. The set $O$ of vulnerabilities reported by \Tool\ is augmented if $r$ confirms a vulnerability (the $V(r)$ check).
+
+A visual summary of the entire algorithm, with its flow steps ordered according to edge labels, is given in \figref{architecture}. The first step (step 1) of instrumenting the app occurs once. Steps 2 through 5 then execute in a loop: Probing is followed by detection, then a security test, and finally validation. Instrumentation hooks triggered by probes and payloads feed additional input points into the iterative testing process.
+
+\begin{figure}
+	\includegraphics[width=\columnwidth]{Architecture.pdf}
+\caption{\label{Fi:architecture}Visual Representation of the Core \Tool\ Algorithm}
+\end{figure} 
