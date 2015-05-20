@@ -58,7 +58,7 @@ We refer to an Android component as \emph{public} if (i) it is exported, either 
 
 Public components form a hole in the Android sandbox. They expose themselves to incoming data from malicious parties, which may lead to vulnerabilities if the data is not sanitized or validated. {\Frag}s are also potentially vulnerable, as they have access to incoming IAC data via their enclosing {\tt Activity} and through its initiating {\tt Intent}.
 
-Malicious parties are both local and remote. Malware, highly prevalent in Android, can interact with the public IAC interfaces directly through explicit {\tt Intent}s without any special permissions. Another attack vector is \emph{drive-by exploitation}: Using the {\tt intent} URI scheme, malicious websites can drive the browser to generate {\tt Intent}s targeting the public IAC interface of an arbitrary app \cite{PHAB:ACSAC10,E:driveby}. These may be either implicit or explicit depending on the browser.
+Malicious parties are both local and remote. Malware, highly prevalent in Android, can interact with the public IAC interfaces directly through explicit {\tt Intent}s without any special permissions. Another attack vector is \emph{drive-by exploitation}: Using the {\tt intent} URI scheme, malicious websites can drive the browser to generate {\tt Intent}s targeting the public IAC interface of an arbitrary app \cite{PHAB:ACSAC10,E:driveby,T:driveby}. These may be either implicit or explicit depending on the browser.
 %\begin{figure}
 %\includegraphics[scale=0.5]{AttackOutline}
 %\caption{Attacking Activities via IAC\label{fig:Attacking-Activities-via-IPC}}
@@ -67,20 +67,20 @@ Malicious parties are both local and remote. Malware, highly prevalent in Androi
 %To reason about the severity of IAC vulnerabilities, we introduce the notion of \emph{depth}, which is the number of user-triggered IAC calls required to invoke an application component. Exported {\Act}s (without permissions), for example, have depth 0. Non-exported {\Act}s that are automatically invoked by depth-0 {\Act}s
 %are also of depth 0. Private components are all of depth $\infty$. Naturally, the most acute security vulnerabilities are those manifesting at depth 0.
 
-\subsection{Potential Vulnerabilities Due to IAC Channels}\label{Se:attackSurface}
+\subsection{Vulnerabilities Due to IAC Channels}\label{Se:attackSurface}
 
 Unsafe handling of incoming IAC data can result in different forms of attack. Below we list the main threats.
 
-\paragraph{Cross-Application Scripting (XAS)} Similarly to Cross-Site Scripting (XSS) in the Web landscape, XAS arises when script content (mostly JavaScript code) is injected into the HTML UI of a hybrid mobile application. This enables different forms of attack, including (i) access to sensitive information, (ii) invocation of native code via JavaScript and (iii) UI defacing/rewriting to trigger phishing attacks.
+\cheapar{Cross-Application Scripting (XAS)} Similarly to Cross-Site Scripting (XSS) in the Web landscape, XAS arises when script content (mostly JavaScript code) is injected into the HTML UI of a hybrid mobile application. This enables different forms of attack, including (i) access to sensitive information, (ii) invocation of native code via JavaScript and (iii) UI defacing/rewriting to trigger phishing attacks.
 
-A concrete interface point for XAS attacks is the {\tt WebView} class, which is used to render HTML content within a mobile app. The principal method of {\tt WebView} is {\tt loadUrl($\ldots$)}. If a malicious app can control the current URL, then all the attacks listed above turn into potential threats. 
+A concrete interface point for XAS attacks is the {\tt WebView} class, which is used to render HTML content within a mobile app \cite{LHDWY:ACSAC11}. The principal method of {\tt WebView} is {\tt loadUrl($\ldots$)}. If a malicious app can control the current URL, then all the attacks listed above turn into potential threats. 
 %We describe several concrete scenarios below.
 %
 To exploit an XAS vulnerability, an attacker can inject JavaScript code using either the {\tt javascript} URI scheme or the {\tt file} scheme. In Android versions up to Jelly Bean, the latter attack vector is relatively straightforward: The attacker creates a malicious HTML file, and directs the target {\tt WebView} object to load that file via an {\tt Intent}.
 %
 %Such code will run in the context of the currently loaded page, if such a page exists. Another possibility is to inject the payload using the {\tt file} scheme. In Android versions up to Jelly Bean, this attack vector is relatively straightforward: The attacker creates a malicious HTML file, and directs the target {\tt WebView} object to load that file via an {\tt Intent}.
 
-\paragraph{{\tt Fragment} Injection} The static {\tt instantiate(Context ctx,String fname,Bundle args)} method of class {\tt Fragment} accepts as {\tt fname} the name of the {\tt Fragment} subclass to load reflectively. This can be leveraged by an attacker to load arbitrary code obtainable through the class loader of {\tt ctx}. 
+\cheapar{{\tt Fragment} Injection} The static {\tt instantiate(Context ctx,String fname,Bundle args)} method of class {\tt Fragment} accepts as {\tt fname} the name of the {\tt Fragment} subclass to load reflectively. This can be leveraged by an attacker to load arbitrary code obtainable through the class loader of {\tt ctx}. 
 
 A successful {\tt Fragment} injection attack can result in loading of an attacker-selected class into the context of the vulnerable app, which grants that class the same privileges and access rights as its host app.
 Otherwise an exception is thrown, but prior to that, the class' static initializer and default constructor are executed, which creates another attack/privacy vector.
@@ -111,7 +111,7 @@ Another alternative is to load a {\tt Fragment} already defined by the applicati
 %\caption{Exploitation by Fragments\label{fig:Exploitation-by-Fragments-1}}
 %\end{figure}
 
-\paragraph{Client-side SQL Injection} Android provides support for SQLite databases. Applications can create
+\cheapar{Client-side SQL Injection} Android provides support for SQLite databases. Applications can create
 and manipulate a private database via a string handle. Once created, the database
 is stored in a subdirectory of the directory allocated for the app
 with the chosen handle as the file name. 
@@ -122,20 +122,20 @@ Insecure invocation of a database operation (for example, \texttt{SQLiteDatabase
 implications on both the integrity and confidentiality of the vulnerable
 app.
 
-\paragraph{File Manipulation} Android
+\cheapar{File Manipulation} Android
 app packages are each assigned a unique Linux UID. A direct consequence
 is that files created by an app package cannot be accessed,
 let alone tampered with, by another app. Though an attacker cannot directly manipulate a file, if (s)he has control over a parameter specifying the path to a given
  file used by the vulnerable app, then (s)he can subvert
 the integrity and/or confidentiality of the file.
 
-\paragraph{Native Memory Corruptions} As mentioned in \secref{andarchitecture}, Android apps may include
+\cheapar{Native Memory Corruptions} As mentioned in \secref{andarchitecture}, Android apps may include
 native code written in C/C++. Such code is subject
 to classic memory corruption issues like buffer overflow, 
 format-string violations and dangling pointers. Such weaknesses can be leveraged to execute arbitrary
 code in the context of the vulnerable app.
 
 
-\paragraph{Unhandled Exceptions (Denial of Service)} Programming errors that trigger unchecked exceptions (like null dereference)
+\cheapar{Unhandled Exceptions (Denial of Service)} Programming errors that trigger unchecked exceptions (like null dereference)
 will usually cause the target app to crash if the exception
 is not caught. This presents an opportunity for denial-of-service (DoS) attacks, and can more generally drive the application into an unexpected state.

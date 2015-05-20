@@ -72,7 +72,7 @@ For the current input point $e$, the next step is to check whether $e$ satisfies
 
 While \Tool\ is a dynamic testing system with (purposely) limited means to track the internal behavior of the target app, there are still situations in which full coverage is guaranteed. These are governed by a simplifying assumption, stated formally in Definition \ref{De:dataind}, which is too idealized to hold pervasively in reality, but still (i) provides insight into the design of \Tool, and (ii) appears useful in practice given \Tool's recall rate of $>90\%$ over a large set of popular Android apps. (See \secref{evaluation}.)
 
-\begin{definition}[Data Independence]\label{De:dataind} We refer to IAC input point $e$ as \emph{data independent} if execution flow starting at $e$ is decided solely according to (i) boolean extras and/or (ii) presence of extra fields. In particular, the values of non-boolean extras (and other variables in the program) do not affect control flow (cf. \cite{SYGABSV:ISSTA14,W:POPL86}).
+\begin{definition}[Data Independence]\label{De:dataind} We classify input point $e$ in the IAC interface as \emph{data independent} if execution flow starting at $e$ is decided solely according to (i) boolean extras and/or (ii) presence of extra fields. In particular, the values of non-boolean extras (and other variables in the program) do not affect control flow (cf. \cite{SYGABSV:ISSTA14,W:POPL86}).
 \end{definition}
 
 \begin{theorem}[Coverage] Let $e$ be a data-independent input point, such that the value of incoming IAC field $f$, arriving through $e$, flows into sink $s$. 

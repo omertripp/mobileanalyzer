@@ -10,6 +10,7 @@
 \usepackage[english]{babel}
 \usepackage{float}
 \usepackage{color}
+\usepackage{balance}
 %\usepackage{amsmath}
 %\usepackage{amsthm}
 \usepackage{amssymb}
@@ -78,6 +79,20 @@ breaklinks=false,pdfborder={0 0 0},backref=false,colorlinks=false]
 
 \title{Dynamic Detection of Inter-application Communication Vulnerabilities in Android}
 
+\author{
+		Roee Hay \\
+		IBM Security \\
+		\textsf{roeeh@il.ibm.com}
+		\and
+		Omer Tripp\\
+		IBM Research \\
+		\textsf{otripp@us.ibm.com}
+		\and
+		Marco Pistoia \\
+		IBM Research \\
+		\textsf{pistoia@us.ibm.com}
+}
+
 \maketitle
 
 \input{abstract}
@@ -103,6 +118,9 @@ breaklinks=false,pdfborder={0 0 0},backref=false,colorlinks=false]
 \input{related}
 
 \input{conclusion}
+
+\newpage
+\balance
 
 \bibliographystyle{abbrv}
 \bibliography{bibliography}

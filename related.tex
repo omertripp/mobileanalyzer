@@ -2,7 +2,7 @@
 
 We survey related studies on Android testing and security. Though we  focus mainly on testing, we also highlight related research in the areas of verification and prevention.
 
-\paragraph{Testing} Maji et al. \cite{MAB:DSN12} conduct an experimental evaluation of the robustness of IAC in Android. In their experiments, they perform fuzz testing with illegal {\tt Intent} inputs, e.g. with blank or random action or data fields, random extras, etc. Their results indicate that exceptional situations are often handled poorly, and under certain conditions can even cause the Android runtime to crash.
+\cheapar{Testing} Maji et al. \cite{MAB:DSN12} conduct an experimental evaluation of the robustness of IAC in Android. In their experiments, they perform fuzz testing with illegal {\tt Intent} inputs, e.g. with blank or random action or data fields, random extras, etc. Their results indicate that exceptional situations are often handled poorly, and under certain conditions can even cause the Android runtime to crash.
 
 Somewhat similarly, Sasnauskas and Regeher \cite{SR:WODA14} develop a fuzzing framework for {\tt Intent}s with the goal of triggering interesting bugs (including crashes) that have previously been unknown. Their fuzzing technique combines static analysis with random test-case generation. Findings due to their system include crashes in dozens of core Google as well as Google Play apps, which in some cases result in complete OS reboot.
 
@@ -12,11 +12,14 @@ Ye et al. \cite{YCZJ:MOMM13} create a fuzzer specifically for {\tt Activity}s th
 
 The AppsPlayground framework, developed by Rastogi et al. \cite{RCE:CODAPSY13}, performs dynamic security analysis of Android apps to detect malware as well as grayware apps.  AppsPlayground has a modular deign, enabling usage of different exploration techniques, including event triggering, fuzz testing and context-sensitive crawling. The choice of detection technique is also modular, permitting e.g. taint tracking, API monitoring and kernel-level monitoring. 
 
-\paragraph{Verification} The ComDroid tool, developed by Chin et al. \cite{CFGW:MOBISYS11}, detects IAC vulnerabilities statically. Specifically, ComDroid performs bounded interprocedural flow-sensitive tracking of {\tt Intent} objects. ComDroid is sensitive to {\tt Intent} properties, such as whether the {\tt Intent} contains extra parameters or defines an action. A warning is issued if an implicit {\tt Intent} is sent out with no or weak permission requirements.
+\cheapar{Verification} The ComDroid tool, developed by Chin et al. \cite{CFGW:MOBISYS11}, detects IAC vulnerabilities statically. Specifically, ComDroid performs bounded interprocedural flow-sensitive tracking of {\tt Intent} objects with sensitivity to {\tt Intent} properties, such as whether the {\tt Intent} contains extra parameters or defines an action. The Epicc analysis tool, by Octeau et al. \cite{Epicc}, has a similar scope. It achieves better scalability than ComDroid by modeling the discovery of communication instances as Interprocedural Distributive Environment (IDE) problems \cite{IDE}.
+%A warning is issued if an implicit {\tt Intent} is sent out with no or weak permission requirements.
 
 The CHEX system, developed by Lu et al. \cite{LLWLJ:CCS12}, vets Android apps for component hijacking vulnerabilities by means of flow- and context-sensitive data-flow analysis. The authors report on an evaluation of CHEX over 5,486 Android apps, 254 of which were found vulnerable.  
 
-\paragraph{Prevention} % http://dl.acm.org/citation.cfm?id=2381948
+\cheapar{Prevention} % http://dl.acm.org/citation.cfm?id=2381948
 Kantola et al. \cite{KCHW:SPSM12} address IAC vulnerabilities due to (i) exposure of app-internal messages to third parties or (ii) receipt of external messages by internal components of the app. As a solution, they propose to harden the Android heuristics to determine the eligible senders and recipients of messages.
 
 Another proposal, by Cozzette et al. \cite{CLMOABFKNR:IM13}, is to revise {\tt Intent} handling such that the system can only err on the safe side. Contrary to the current design, whereby a developer may inadvertently create opportunities for another app to inject a malicious {\tt Intent} or intercept outgoing {\tt Intent}s, Cozzette et al. propose a model that disables all such behaviors unless these are requested explicitly by the developer. This does not remove integrity threats, however, as erroneous handling of incoming {\tt Intent}s remains possible.
+
+Luo et al. study the {\tt WebView} component, which enables an app to embed a browser in its UI (cf. Section \ref{Se:surface}). They observe that {\tt WebView} diverges from standard browsers in that both sandbox protection and the client-side Trusted Component Base (TCB) are weakened, and identify security threats that arise as a consequence. They also propose potential solutions to prevent such attacks.

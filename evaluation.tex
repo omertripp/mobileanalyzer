@@ -7,31 +7,32 @@ In this section, we describe quantiative results and share qualitative insight f
 For our experiments, we assembled a suite of 80 Android apps: 4 enterprise apps, 3 apps shipping with version 4.4 of the Android platform, as well as the 73 top-popular Google Play apps in the geography of one of the authors.
 The experiments were conducted on a Samsung Nexus 5 device running version 4.4 of the Android platform (CyanogenMod 11). For accuracy and reproducibility, we reset the device to a clean image before testing each of the apps.
 
-Prior to running \Tool, an independent professional ethical hacker audited all 80 apps. The audit resulted in a total of 163 IAC vulnerabilities. \tableref{vulns} provides a breakdown of the results by issue type.
+Prior to running \Tool, an independent professional ethical hacker audited all 80 apps. The manual audit consisted in running, and validating by hand the results of, a brute-force fuzzing tool. The tool (i) establishes a crude attack surface by targeting, beyond the {\tt uri} field, all constant strings in the Dalvik bytecode as candidate extra parameters, and (ii) discharges a large amount of pre-defined payloads at each target.
+The fuzzing process demanded several hours (if not more) per application, and was carried out over a period of three weeks with multiple instances of the tool running in parallel. It resulted in a total of 163 IAC vulnerabilities. \tableref{vulns} provides a breakdown of the results by issue type.
 
 \subsection{Performance Results}
 
 We have conducted a series of experiments to measure, and thereby justify, the key features of \Tool. We organize our description of the experiments around four research hypotheses. The starting point is a baseline algorithm that only targets declared input points via the {\tt data} field.
 
-\paragraph{H1: Probing Boosts Performance} To quantify the performance gain thanks to probing, we enhanced the baseline algorithm with necessary-conditions specifications as described in \secref{detectionSubsec}. Instead of blindly attempting all possible test payloads, the enhanced version first analyzes the probing trace to focus testing only on relevant attack types.
+\cheapar{H1: Probing Boosts Performance} To quantify the performance gain thanks to probing, we enhanced the baseline algorithm with necessary-conditions specifications as described in \secref{detectionSubsec}. Instead of blindly attempting all possible test payloads, the enhanced version first analyzes the probing trace to focus testing only on relevant attack types.
 
 The statistics demonstrate significant improvement. While naive fuzzing expends an average of 64 tests and 24 minutes per app, the enhanced version requires $<15$ tests and $<7$ minutes per app to detect the same set of IAC vulnerabilities.
 
-\paragraph{H2: String Extras are Often Vulnerable} The naive testing algorithm, equipped with probing capabilities, is able to detect a total of 94 out of the 163 known vulnerabilities for a recall rate of $0.57$. Enhancing it to incorporate string extras as attack targets pushes recall up to 0.85, as 46 new vulnerabilities are detected.
+\cheapar{H2: String Extras are Often Vulnerable} The naive testing algorithm, equipped with probing capabilities, is able to detect a total of 94 out of the 163 known vulnerabilities for a recall rate of $0.57$. Enhancing it to incorporate string extras as attack targets pushes recall up to 0.85, as 46 new vulnerabilities are detected.
 
 The resulting variant features an iterative testing loop, which attacks targets discovered in previous probing/testing rounds. Naturally, this renders it more expensive than its naive counterpart with an average of 26 (compared to 15) tests and 12 (compared to 7) minutes per app.
 
-\paragraph{H3: Boolean Extras Manifest in Path Conditions} The algorithm featuring both probing and manipulation of string extras already detects 140 out of the 163 known vulnerabilities. A natural means to further increase coverage is by exploring new execution paths.
+\cheapar{H3: Boolean Extras Manifest in Path Conditions} The algorithm featuring both probing and manipulation of string extras already detects 140 out of the 163 known vulnerabilities. A natural means to further increase coverage is by exploring new execution paths.
 
 Augmenting the testing algorithm to explore different combinations of boolean extras achieves this goal effectively. This is seen through the discovery of 11 new vulnerabilities, constituting a 7\% improvement in recall, for a total of 151 vulnerabilities detected fully automatically. 
 
 The cost, as expected, is noticeable. The average number of tests per app climbs by x2.42 from 26 to 63 with a proportional rise of x2.1 in testing time from 12 to 25 minutes. This motivates more efficient detection of new paths.
 
-\paragraph{H4: Linear-time Path Exploration is Effective} The fourth and final hypothesis concerns the relationship between boolean extras in their capacity as branching expressions. The claim is that it is effective to treat boolean extras as either dominating each other or being independent.
+\cheapar{H4: Linear-time Path Exploration is Effective} The fourth and final hypothesis concerns the relationship between boolean extras in their capacity as branching expressions. The claim is that it is effective to treat boolean extras as either dominating each other or being independent.
 
 Under this assumption, which enables toggling of boolean extras one at a time and thus linear-complexity path exploration, testing time drops to 19 minutes (24\% improvement) and the average number of tests is only 40 compared to 63 before (37\% improvement). At the same time, only one of the 151 vulnerabilities detected via the exponential-time path-exploration algorithm is missed for a negligible drop of $<1$\% in recall.
 
-\paragraph{Discussion} In conclusion, \Tool\ effectively balances performance against coverage.\footnote{
+\cheapar{Discussion} In conclusion, \Tool\ effectively balances performance against coverage.\footnote{
 	Beyond the data we present here, which confirms our design choices one atop the other, we have a full matrix of measurements per every combination of the choices we've made. We have omitted most of these measurements for lack of space, but note that they are in strong support of our hypotheses.
 } Regarding false negatives, our analysis of the 14 misses (w.r.t. the most comprehensive \Tool\ configuration) reveals that these are caused by one or both of the following reasons: (i) incomplete path coverage (and in particular, path conditions other than boolean extras) and (ii) overly conservative probing checks (where the probe is nontrivially mutated by the app, yet it is possible to craft a successful test payload).
 
@@ -133,7 +134,7 @@ com.devuni.flashlight & 139 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \
 com.whatsapp & 47672 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
 fr.beungoud.xbmcremote & 47 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\ 
 \hline\hline
-\multicolumn{1}{c|}{{\bf 55/80}} & {\bf 163} & {\bf 5} & {\bf 1} & {\bf 4}  & {\bf 6}  & {\bf 8} & {\bf 30} & {\bf 1} & {\bf 1} \\
+& \multicolumn{1}{c|}{{\bf 55/80}} & {\bf 163} & {\bf 5} & {\bf 1} & {\bf 4}  & {\bf 6}  & {\bf 8} & {\bf 30} & {\bf 1} & {\bf 1} \\
 %\_Dropbox v2.3.8 & 4 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
 %\_eBay v2.3.0.25 & 3 & \xmark & \xmark & \cmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
 %\_Evernote v5.1.2 & 7 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
@@ -226,13 +227,13 @@ fr.beungoud.xbmcremote & 47 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \
 
 We conclude by highlighting three vulnerabilities of special interest being both nontrivial and severe. We have reported these vulnerabilities to the developers. In all cases, the vulnerable scenario was confirmed to be critical and was fixed shortly thereafter.
 
-\paragraph{Preference Activities and Dynamic Fragment Loading}\label{Se:PreferenceActivities}
+\cheapar{Preference Activities and Dynamic Fragment Loading}\label{Se:PreferenceActivities}
 
 The Android framework provides an abstract {\tt Activity} class,\texttt{
 android.preference.PreferenceActivity}, which serves as a reusable and extensible preferences dialog. 
-The {\tt PreferenceActivity} class queries its input {\tt Intent} for several extra data fields, including \texttt{EXTRA\_SHOW\_FRAGMENT}
+The {\tt PreferenceActivity} class queries its input {\tt Intent} for several extra data fields. These include fields \texttt{EXTRA\_SHOW\_FRAGMENT}
 (\texttt{show\_fragment}) 
-and \texttt{EXTRA\_SHOW\_FRAGMENT\_ARGUMENTS}.
+as well as \texttt{EXTRA\_SHOW\_FRAGMENT\_ARGUMENTS}.
 (\texttt{show\_fragment\_arguments}).
 
 The first of these fields specifies the name 
@@ -285,7 +286,7 @@ which is documented as follows in the Android SDK:
 It is the responsibility of the developer to override method {\tt isValidFragment($\ldots$)} to whitelist the {\tt Fragment}s that are allowed to be loaded within a specific
 {\tt Activity}.
 
-\paragraph{XAS Weakness in Apache Cordova}\label{Se:CordovaXAS}
+\cheapar{XAS Weakness in Apache Cordova}\label{Se:CordovaXAS}
 
 Apache Cordova is among the most prevalent Android frameworks, serving as the basis of 5.8\% of all Android applications and 1.2\% of the top 500 apps in the Google-Play store.\footnote{\url{http://www.appbrain.com/stats/libraries/details/phonegap/phonegap-apache-cordova}} Cordova exposes a set of APIs that allow the developer to access native device functionality, such as the camera or accelerometer, from JavaScript. Combined with a UI framework like jQuery, Cordova enables the development of smartphone apps based only
 on HTML, CSS and JavaScript. This is forming into a strong trend. Indeed as of July 2014, 7.8\% of all new apps (30 days old or younger) are built atop Cordova, which indicates that Cordova is increasingly gaining popularity.
@@ -327,8 +328,7 @@ We emphasize that in the described scenario, the {\tt 'url'} extra parameter is 
 \Tool\ was able to successfully detect this nontrivial vulnerability using its ability to track indirect accesses to extra parameters, as described in \secref{customparams}.
 We  disclosed this acute issue to the Cordova team as CVE-2014-3500. The Cordova team has issued a patch starting version 3.5.1 of the framework.
 
-\paragraph{File Manipulation in the Firefox Browser}\label{Se:FirefoxFileManipulation}
-
+\cheapar{File Manipulation in the Firefox Browser}\label{Se:FirefoxFileManipulation}
 Public class {\tt org.mozilla.gecko.CrashReporter} extends {\tt Activity}. Its purpose is to send crash dumps to Mozilla when the Firefox browser treminates unexpectedly.
 {\tt CrashReporter}, a subclass of {\tt Activity}, receives the dump file path as input via an extra {\tt Intent} parameter called {\tt minidumpPath}. When this {\tt Activity} is launched, its {\tt onCreate($\ldots$)} method is executed, triggering the following sequence of actions:
 \begin{enumerate}
