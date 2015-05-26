@@ -8,6 +8,7 @@ For our experiments, we assembled a suite of 80 Android apps: 4 enterprise apps,
 The experiments were conducted on a Samsung Nexus 5 device running version 4.4 of the Android platform (CyanogenMod 11). For accuracy and reproducibility, we reset the device to a clean image before testing each of the apps.
 
 Prior to running \Tool, an independent professional ethical hacker audited all 80 apps. The manual audit consisted in running, and validating by hand the results of, a brute-force fuzzing tool. The tool (i) establishes a crude attack surface by targeting, beyond the {\tt uri} field, all constant strings in the Dalvik bytecode as candidate extra parameters, and (ii) discharges a large amount of pre-defined payloads at each target.
+
 The fuzzing process demanded several hours (if not more) per application, and was carried out over a period of three weeks with multiple instances of the tool running in parallel. It resulted in a total of 163 IAC vulnerabilities. \tableref{vulns} provides a breakdown of the results by issue type.
 
 \subsection{Performance Results}
@@ -47,6 +48,8 @@ A visual illustration of the performance/coverage tradeoffs achieved by the diff
 
 
 \begin{table*}
+\def\arraystretch{0.75}
+\caption{\label{Ta:vulns}Detected Vulnerabilities with Breakdown by Attack Type}
 \begin{scriptsize}
 \begin{center}
 \begin{tabular}{l|c|c|c|c|c|c|c|c|c|c}
@@ -134,7 +137,7 @@ com.devuni.flashlight & 139 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \
 com.whatsapp & 47672 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\
 fr.beungoud.xbmcremote & 47 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark & \xmark \\ 
 \hline\hline
-& \multicolumn{1}{c|}{{\bf 55/80}} & {\bf 163} & {\bf 5} & {\bf 1} & {\bf 4}  & {\bf 6}  & {\bf 8} & {\bf 30} & {\bf 1} & {\bf 1} \\
+\multicolumn{1}{c|}{{\bf 55/80}} & & {\bf 163} & {\bf 5} & {\bf 1} & {\bf 4}  & {\bf 6}  & {\bf 8} & {\bf 30} & {\bf 1} & {\bf 1} \\
 %\_Dropbox v2.3.8 & 4 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
 %\_eBay v2.3.0.25 & 3 & \xmark & \xmark & \cmark & \xmark & \xmark & \cmark & \xmark & \xmark \\
 %\_Evernote v5.1.2 & 7 & \xmark & \xmark & \xmark & \xmark & \cmark & \cmark & \xmark & \xmark \\
@@ -220,15 +223,17 @@ fr.beungoud.xbmcremote & 47 & 0 & \xmark & \xmark & \xmark & \xmark & \xmark & \
 \end{tabular}
 \end{center}
 \end{scriptsize}
-\caption{\label{Ta:vulns}Detected Vulnerabilities with Breakdown by Attack Type}
 \end{table*}
 
 \subsection{Interesting Vulnerabilities}\label{Se:caseStudies}
 
-We conclude by highlighting three vulnerabilities of special interest being both nontrivial and severe. We have reported these vulnerabilities to the developers. In all cases, the vulnerable scenario was confirmed to be critical and was fixed shortly thereafter.
+Though all vulnerabilities specified above are exploitable, most of them are of 
+low severity as they either only impact the stability of the target app or assume a complex payload/vector that is hard to create in practice.
+%
+Other findings are of high severity, as they impact the confidentiality of user data, the integrity of the application or both, and we were able to demonstrate a concrete exploit for them. We conclude by
+highlighting three of these vulnerabilities. We have reported these vulnerabilities to the developers. In all cases, the vulnerable scenario was confirmed as such and was fixed shortly thereafter.
 
-\cheapar{Preference Activities and Dynamic Fragment Loading}\label{Se:PreferenceActivities}
-
+\cheapar{Preference Activities and Fragment Loading}\label{Se:PreferenceActivities}
 The Android framework provides an abstract {\tt Activity} class,\texttt{
 android.preference.PreferenceActivity}, which serves as a reusable and extensible preferences dialog. 
 The {\tt PreferenceActivity} class queries its input {\tt Intent} for several extra data fields. These include fields \texttt{EXTRA\_SHOW\_FRAGMENT}
@@ -267,24 +272,26 @@ activity. A user can then bypass insertion of the old PIN number when changing P
 We have reported this severe issue to the Android security team. In response, they
 created a patch for \texttt{PreferenceActivity} starting Android 4.4 KitKat. 
 The patched class contains a new method, \texttt{isValidFragment(String fragmentName)}, 
-which is documented as follows in the Android SDK:
-\begin{quote}
-	``\textit{Added in API level 19}
-	
-	Subclasses should override this method and verify that the given fragment
-	is a valid type to be attached to this activity. The default implementation
-	returns true for apps built for \texttt{targetSdkVersion}
-	older than \texttt{KITKAT}. For later versions, it will throw an exception.
-	
-	\textit{Parameters} \texttt{fragmentName} the class name of the Fragment
-	about to be attached to this activity. 
-	
-	\textit{Returns} true if the fragment class name is valid for this
-	Activity and false otherwise which is called before the fragment is
-	instantiated.'' 
-\end{quote}
-It is the responsibility of the developer to override method {\tt isValidFragment($\ldots$)} to whitelist the {\tt Fragment}s that are allowed to be loaded within a specific
-{\tt Activity}.
+where the Android SDK clearly states that 
+``\textit{[s]ubclasses should override this method to verify that the given fragment is a valid type to be attached to this activity}''.
+%which is documented as follows in the Android SDK:
+%\begin{quote}
+%	``\textit{Added in API level 19}
+%	
+%	Subclasses should override this method and verify that the given fragment
+%	is a valid type to be attached to this activity. The default implementation
+%	returns true for apps built for \texttt{targetSdkVersion}
+%	older than \texttt{KITKAT}. For later versions, it will throw an exception.
+%	
+%	\textit{Parameters} \texttt{fragmentName} the class name of the Fragment
+%	about to be attached to this activity. 
+%	
+%	\textit{Returns} true if the fragment class name is valid for this
+%	Activity and false otherwise which is called before the fragment is
+%	instantiated.'' 
+%\end{quote}
+%It is the responsibility of the developer to override method {\tt isValidFragment($\ldots$)} to whitelist the {\tt Fragment}s that are allowed to be loaded within a specific
+%{\tt Activity}.
 
 \cheapar{XAS Weakness in Apache Cordova}\label{Se:CordovaXAS}
 
@@ -299,8 +306,7 @@ public void loadUrl(String url) {
       url.startsWith("javascript:")) { this.loadUrlNow(url); }
   else {
     String initUrl = this.getProperty("url", null); }
-    // If first page of app, 
-    // then set URL to load to be the one passed in
+    // If fst page, then set URL to load to be the one passed in
     if (initUrl == null) { this.loadUrlIntoView(url); }
     // Otherwise use the URL specified in the extras bundle
     else { this.loadUrlIntoView(initUrl); } }
@@ -310,15 +316,14 @@ As the code shows, the {\tt initUrl} string is defined as the result of a  {\tt 
 \begin{small}
 \begin{lstlisting}[showstringspaces=false]
 public String getProperty(String name, String defaultValue) {
-  Bundle bdl = 
-      this.cordova.getActivity().getIntent().getExtras();
+  Bundle bdl = cordova.getActivity().getIntent().getExtras();
   if (bdl == null) { return defaultValue; }
   Object p = bdl.get(name);
   if (p == null) { return defaultValue; }
   return p.toString(); }
 \end{lstlisting}
 \end{small}
-The return value of {\tt getProperty($\ldots$)} is an extra parameter obtained from the {\tt Bundle} object associated with the current {\tt Intent} (which, in turn, is retrieved via the {\tt getIntent().getExtras()} getter chain). Thus, variable {\tt url} in {\tt loadUrl($\ldots$)}, flowing into the {\tt loadUrlIntoView} call, presents an opportunity for an attack. This variable is defined
+The return value of {\tt getProperty($\ldots$)} is an extra parameter obtained from the {\tt Bundle} object associated with the current {\tt Intent} (which, in turn, is retrieved via the {\tt getIntent().getExtras()} getter chain). Thus, variable {\tt url} in {\tt loadUrl($\ldots$)}, flowing into the {\tt loadUrlIntoView} call, opens the opportunity for an attack. This variable is defined
 as the value of the {\tt 'url'} extra parameters, which can be set externally.  
 Thus, a malicious caller could launch the {\tt Activity} with an {\tt Intent} whose respective {\tt Bundle} maps {\tt 'url'} to an unintended value. The provided URL will consequently be loaded by Cordova and rendered within the {\tt WebView}.
 
@@ -331,14 +336,14 @@ We  disclosed this acute issue to the Cordova team as CVE-2014-3500. The Cordova
 \cheapar{File Manipulation in the Firefox Browser}\label{Se:FirefoxFileManipulation}
 Public class {\tt org.mozilla.gecko.CrashReporter} extends {\tt Activity}. Its purpose is to send crash dumps to Mozilla when the Firefox browser treminates unexpectedly.
 {\tt CrashReporter}, a subclass of {\tt Activity}, receives the dump file path as input via an extra {\tt Intent} parameter called {\tt minidumpPath}. When this {\tt Activity} is launched, its {\tt onCreate($\ldots$)} method is executed, triggering the following sequence of actions:
-\begin{enumerate}
+\begin{compactenum}
 	\item Using the \texttt{moveFile($\ldots$)} method, the current dump file is moved to the pending dump-files path: \texttt{files/mozilla/Crash Reports/pending}.
 	\item A metadata filename is derived from the given dump file path by replacing all occurrences of the {\tt .dmp} file extension with  {\tt .extra}. 
 	\item The metadata file is subsequently moved to the pending dump-files path using the \texttt{moveFile($\ldots$)} method.
 	\item The metadata file is parsed into key/value format. The target server's URL (i.e., the URL of the server that the crash information is sent to) is specified there using the \texttt{ServerURL} key.
 	\item The {\tt CrashReporter} dialog is displayed to the user.
 	\item Finally, when the user presses either the ``Close'' or the ``Restart'' button with the ``Send report'' checkbox enabled, the dump file --- along with other sensitive information --- are sent to the specified server by invoking the {\tt sendReport($\ldots$)} method. Note that if the user further checks the ``Include the address'' checkbox, then Android logs are sent as well.
-\end{enumerate}
+\end{compactenum}
 
 The security problem created by this scenario traces back to {\tt CrashReporter} and its treatment of the {\tt minidumpPath} extra parameter as trusted, where in fact it should be treated as untrusted, as it is specified by an external agent.
 %

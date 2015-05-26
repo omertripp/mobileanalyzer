@@ -1,6 +1,6 @@
 \section{Introduction}\label{Se:introduction}
 
-Android is the most popular mobile operating system, with 79\% of the worldwide smartphone sales to end users in 2Q13 \cite{gartner-android-share}. A key aspect of the Android architecture is IAC, aka Inter-Process Communication (IPC), which enables modular design and reuse of functionality across apps and app components.
+Android is the most popular mobile operating system, with 78\% of the worldwide smartphone sales to end users in Q1 2015 \cite{idc-android-share}. A key aspect of the Android architecture is IAC, aka Inter-Process Communication (IPC), which enables modular design and reuse of functionality across apps and app components.
 
 The Android IAC model is implemented as a message-passing system, where messages are encapsulated as {\tt Intent} objects. Through {\tt Intent}s, an app (or app component) can utilize functionality exposed by another app (or app component), e.g. by passing a message to the browser to render content or to a navigation app to display a location and provide directions to it. 
 
@@ -8,8 +8,8 @@ The Android IAC interface is a significant attack surface \cite{CPGW:MOBISYS11,M
 
 \cheapar{Past Research} The Android IAC interface has been investigated from different angles. These include static detection algorithms for confidentiality threats due to outbound IAC \cite{EOM:SP09}; fuzzing tools to test the robustness of message handling \cite{MAB:DSN12}, or otherwise detect specific security weaknesses like capability leakage \cite{YZWZD:ACCS14}; as well as proposals to revise architectural aspects of the Android system for more secure IAC \cite{KCHW:SPSM12}).
 
-While these studies are all useful, a main concern that remains unaddressed is IAC integrity threats. In recent years, several critical IAC vulnerabilities have been disclosed. A notable example is CVE-2011-2357,\footnote{\url{http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2011-2357}} a Cross-Application Scripting (XAS) vulnerability
-(see Section \ref{Se:attackSurface}) in the Android Browser manually discovered by one of the authors of this paper. Yet another example is the ability to exploit the IAC interface using drive-by techniques, e.g. by navigating the browser to a malicious website \cite{T:driveby}. These and similar discoveries indicate that IAC can become a serious security hole.
+While these studies are all useful, a main concern that remains unaddressed is IAC integrity threats. In recent years, several critical IAC vulnerabilities have been disclosed. A notable example is CVE-2011-2357 \cite{XAS-CVE}, which reports a Cross-Application Scripting (XAS) vulnerability
+ in the Android Browser manually discovered by one of the authors of this paper. (See Section \ref{Se:attackSurface}.) Yet another example is the ability to exploit the IAC interface using drive-by techniques, e.g. by pointing the browser at a malicious website \cite{T:driveby}. These and similar discoveries expose IAC as a potentially serious security hole.
 
 To our knowledge, none of the existing research provides a solution for comprehensive integrity testing of IAC channels. The main challenge for the testing tool is that all fields of an IAC message but {\tt uri} are custom (i.e., not specified in the IAC interface declaration). This complicates the construction of meaningful test inputs. Another challenge is how to obtain effective path coverage with low overhead.
 
@@ -19,7 +19,9 @@ To our knowledge, none of the existing research provides a solution for comprehe
 
 \cheapar{Our Approach} We address the problem of testing for IAC integrity vulnerabilities. In stating this problem, we place special emphasis on practicality. Our goal is to design a testing algorithm featuring high recall (or coverage) alongside low overhead. This twofold requirement implies, in specific, that the testing tool can only (i) rely on sparse app/platform instrumentation (as opposed to gleaning arbitrary run-time information), and (ii) apply a small and focused set of tests.
 
-While high coverage is a natural requirement, the motivation for low overhead is to enable efficient large-scale testing by third parties, such as app stores or organizations with a Bring Your Own Device (BYOD) policy, that currently have limited vetting power. Indeed, the testing system we have created, dubbed \Tool, is packaged as a cloud-based service to support these use cases.
+While high coverage is a natural requirement, the motivation for low overhead is to enable efficient large-scale testing by third parties, such as app stores or organizations with a Bring Your Own Device (BYOD) policy, that currently have limited vetting power. Indeed, the testing system we have created, dubbed \Tool, is packaged as a cloud-based service to support these use cases.\footnote{
+	\url{http://www-03.ibm.com/software/products/en/appscan-mobile-analyzer}
+}
 
 The idea underlying \Tool\ is to monitor only a select set of platform APIs --- those responsible for security-relevant functionality as well as access to IAC data --- and utilize the resulting run-time information to guide testing. We describe how, based on this information alone, \Tool\ is able to prune redundant tests, recover custom IAC fields, and vary inputs to increase path coverage.  
 
@@ -27,11 +29,11 @@ We report on extensive evaluation of \Tool\ across a set of 80 top-popular Andro
 Using an average of 40 tests per app, \Tool\ was able to detect 150 of those vulnerabilities, which constitutes a recall rate of 92\%. Some of the vulnerabilities have already been fixed by the developers. Beyond validating the overall efficacy of \Tool, we also validate each of the design choices it features, and demonstrate its significance experimentally. Last, we provide qualitative insight into the usefulness of \Tool\ via detailed analysis of several of the detected vulnerabilities.
 
 \cheapar{Contributions} This paper makes the following principal contributions:
-\begin{enumerate}
+\begin{compactenum}
 	\item \underline{Comprehensive IAC Security Testing:} We have created the first comprehensive dynamic testing system for Android IAC integrity vulnerabilities (Sections \ref{Se:corealg}-\ref{Se:fullalg}).
-	\item \underline{Attack Surface:} We develop a catalog of previously unknown attack vectors that all result from insecure handling of incoming IAC traffic. This is of independent value for future research on Android security (\secref{surface}). 
-	\item \underline{Implementation and Evaluation:} We have implemented our approach as the \Tool\ system, which is featured as a commercial cloud service, and has been evaluated atop 80 top-popular Android apps (\secref{evaluation}).
-\end{enumerate}
+	\item \underline{Attack Surface:} We develop a catalog of attack vectors that all result from insecure handling of incoming IAC traffic (\secref{surface}). Some of these vectors correspond to previously unknown vulnerabilities (including at the platform level), which we have reported to the respective vendors and were subsequently fixed (\secref{caseStudies}). This is of independent value for future research on Android security. 
+	\item \underline{Implementation and Evaluation:} We have implemented our approach as the \Tool\ system, which is featured as a commercial cloud service (with a free trial period), and has been evaluated atop 80 top-popular Android apps (\secref{evaluation}). We report on a rich set of vulnerabilities that \Tool\ was able to detect.
+\end{compactenum}
 
 
  
