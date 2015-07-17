@@ -4,7 +4,7 @@ Having highlighted the main \Tool\ features, we now describe the complete algori
 
 \subsection{Setup}
 
-The testing session begins by deploying the target app in debug mode. This enables the insertion of debug breakpoints into library APIs. The motivation for this design choice was that it applies to any Android build and any device as opposed to requiring a custom build (as in \cite{EGCCJMS:OSDI10}), which limits applicability and requires heavy maintenance.
+The testing session begins by deploying the target app in debug mode. This enables the insertion of debug breakpoints into library APIs. The motivation for this design choice was that it applies to any Android build and any device  (provided the {\tt ro.debuggable} property is set to 1) as opposed to requiring a custom build (as in \cite{EGCCJMS:OSDI10}), which limits applicability and requires heavy maintenance.
 
 Once the target app is deployed, \Tool\ obtains --- via the {\tt apktool} utility --- its manifest file. Parsing the manifest reveals the set of {\tt Activity}s defined by the app that are both public and exported. These are reachable directly via {\tt Intent}s, and so the first IAC inputs created by \Tool\ are benign {\tt Intent}s.
 

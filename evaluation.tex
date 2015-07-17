@@ -5,7 +5,7 @@ In this section, we describe quantiative results and share qualitative insight f
 \subsection{Experimental Setup and Methodology}
 
 For our experiments, we assembled a suite of 80 Android apps: 4 enterprise apps, 3 apps shipping with version 4.4 of the Android platform, as well as the 73 top-popular Google Play apps in the geography of one of the authors.
-The experiments were conducted on a Samsung Nexus 5 device running version 4.4 of the Android platform (CyanogenMod 11). For accuracy and reproducibility, we reset the device to a clean image before testing each of the apps.
+The experiments were conducted on a LG Nexus 5 device running version 4.4 of the Android platform (CyanogenMod 11). For accuracy and reproducibility, we reset the device to a clean image before testing each of the apps.
 
 Prior to running \Tool, an independent professional ethical hacker audited all 80 apps. The manual audit consisted in running, and validating by hand the results of, a brute-force fuzzing tool. The tool (i) establishes a crude attack surface by targeting, beyond the {\tt uri} field, all constant strings in the Dalvik bytecode as candidate extra parameters, and (ii) discharges a large amount of pre-defined payloads at each target.
 
@@ -250,7 +250,7 @@ The second field is the \texttt{Fragment}'s input {\tt Bundle}. A loaded \texttt
 receive input arguments by accessing its host activity (and therefore
 its input \texttt{Intent}) using the \texttt{Fragment.getActivity()} API. The second field therefore provides the additional arguments required to instantiate the {\tt Fragment} (if any).
 
-Any app containing an exported {\tt Activity} that extends the {\tt PreferenceActivity} class can be subverted to load an arbitrary class
+Any app containing an exported {\tt Activity} that extends the {\tt PreferenceActivity} class can be subverted to load an arbitrary class (available to the class loader of the target application)
 by exploiting the unsafe dynamic {\tt Fragment} loading process. \Tool\ was indeed able to take advantage of this weakness
 in several applications --- including Gmail, Google Translate and Dropbox --- by
 targeting the \texttt{show\_fragment}  field with {\tt Fragment} class names from the Android framework and providing corresponding arguments via the \texttt{show\_fragment\_arguments} field. 
